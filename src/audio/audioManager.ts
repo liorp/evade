@@ -77,15 +77,19 @@ class AudioManager {
   }
 
   async unload(): Promise<void> {
-    if (this.backgroundMusic) {
-      await this.backgroundMusic.unloadAsync();
-      this.backgroundMusic = null;
+    try {
+      if (this.backgroundMusic) {
+        await this.backgroundMusic.unloadAsync();
+        this.backgroundMusic = null;
+      }
+      if (this.gameOverSound) {
+        await this.gameOverSound.unloadAsync();
+        this.gameOverSound = null;
+      }
+      this.isLoaded = false;
+    } catch (error) {
+      console.warn('Audio unload failed:', error);
     }
-    if (this.gameOverSound) {
-      await this.gameOverSound.unloadAsync();
-      this.gameOverSound = null;
-    }
-    this.isLoaded = false;
   }
 }
 
