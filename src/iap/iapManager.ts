@@ -20,10 +20,14 @@ class IAPManager {
 
   private async loadProducts(): Promise<void> {
     try {
-      const sku = IAP_PRODUCTS.REMOVE_ADS as string;
-      // Use fetchProducts with correct API
+      const productIds = [
+        IAP_PRODUCTS.REMOVE_ADS,
+        IAP_PRODUCTS.SHARDS_100,
+        IAP_PRODUCTS.SHARDS_500,
+        IAP_PRODUCTS.SHARDS_1500,
+      ];
       this.products = await ExpoIAP.fetchProducts({
-        skus: [sku],
+        skus: productIds as string[],
         type: 'inapp',
       });
     } catch (error) {
@@ -38,7 +42,6 @@ class IAPManager {
 
     try {
       const sku = IAP_PRODUCTS.REMOVE_ADS as string;
-      // Use correct requestPurchase API
       await ExpoIAP.requestPurchase({
         request: Platform.select({
           ios: { sku },
@@ -54,6 +57,27 @@ class IAPManager {
     }
   }
 
+  async purchaseShards(productId: string): Promise<boolean> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    try {
+      await ExpoIAP.requestPurchase({
+        request: Platform.select({
+          ios: { sku: productId },
+          android: { skus: [productId] },
+          default: { sku: productId },
+        }) as ExpoIAP.RequestPurchaseIOS | ExpoIAP.RequestPurchaseAndroid,
+        type: 'inapp',
+      });
+      return true;
+    } catch (error) {
+      console.warn('Shard purchase failed:', error);
+      return false;
+    }
+  }
+
   async restorePurchases(): Promise<boolean> {
     if (!this.isInitialized) {
       await this.initialize();
@@ -62,7 +86,6 @@ class IAPManager {
     try {
       const purchases = await ExpoIAP.getAvailablePurchases();
       const sku = IAP_PRODUCTS.REMOVE_ADS as string;
-      // Product has 'id' not 'productId'
       const hasRemoveAds = purchases.some((p) => p.id === sku);
       return hasRemoveAds;
     } catch (error) {
@@ -73,9 +96,13 @@ class IAPManager {
 
   getRemoveAdsPrice(): string {
     const sku = IAP_PRODUCTS.REMOVE_ADS as string;
-    // Product has 'id' and 'displayPrice'
     const product = this.products.find((p) => p.id === sku);
     return product?.displayPrice ?? '$3.99';
+  }
+
+  getProductPrice(productId: string): string {
+    const product = this.products.find((p) => p.id === productId);
+    return product?.displayPrice ?? '';
   }
 
   async disconnect(): Promise<void> {
