@@ -23,7 +23,7 @@ interface ContinueModalProps {
   onDecline: () => void;
 }
 
-const COUNTDOWN_DURATION = 3;
+const COUNTDOWN_DURATION = 5;
 const RING_SIZE = 120;
 const RING_STROKE_WIDTH = 6;
 const RING_RADIUS = (RING_SIZE - RING_STROKE_WIDTH) / 2;
@@ -103,7 +103,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
 
   return (
     <View style={styles.overlay}>
-      <HexFrame width={300} height={380} color="cyan" glowPulse style={styles.frame}>
+      <HexFrame width={340} height={380} color="cyan" glowPulse style={styles.frame}>
         <View style={styles.content}>
           <ChromeText size={32} color="cyan" glowPulse={false}>
             {t('continue.title', 'Continue?')}
@@ -151,7 +151,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
                 onPress={handleWatchAd}
                 variant="primary"
                 disabled={!adManager.isRewardedReady()}
-                style={styles.button}
+                style={styles.watchAdButton}
               />
             )}
             <GlassButton
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
     overflow: 'visible',
   },
   countdownContainer: {
@@ -213,6 +213,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    minWidth: 280,
+    minWidth: 300,
+  },
+  watchAdButton: {
+    minWidth: 300,
+    paddingHorizontal: 12,
   },
 });

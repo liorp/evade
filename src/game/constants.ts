@@ -42,11 +42,7 @@ export const GAME = {
 
   // Cleanup
   OFFSCREEN_BUFFER: 100, // px beyond screen to remove enemies
-  ENEMY_MAX_LIFETIME: 8000, // ms - enemies despawn after this time
-
-  // Close dodge system
-  CLOSE_DODGE_THRESHOLD: 15, // px beyond collision radius
-  CLOSE_DODGE_POINTS: 5, // bonus points per close dodge
+  ENEMY_MAX_LIFETIME: 4000, // ms - enemies despawn after this time
 
   // Handedness exclusion zone
   EXCLUSION_ZONE_PERCENT: 0.4, // 40% of edge
