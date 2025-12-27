@@ -142,23 +142,29 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         }
 
         // Show explosion if collision data exists (not finger lift)
-        if (gameOverData.collisionPosition && gameOverData.enemySpeedTier) {
+        const { collisionPosition } = gameOverData;
+        const hasCollision = collisionPosition && gameOverData.enemySpeedTier;
+        if (collisionPosition && hasCollision) {
           const themeData = ENEMY_THEMES[equipped.enemyTheme];
           setExplosion({
             id: Date.now().toString(),
-            x: gameOverData.collisionPosition.x,
-            y: gameOverData.collisionPosition.y,
+            x: collisionPosition.x,
+            y: collisionPosition.y,
             color: themeData.colors.base,
           });
         }
 
-        // Check if player can use continue
-        if (canUseContinue() && adManager.isRewardedReady()) {
-          setPendingGameOver(true);
-          setShowContinueModal(true);
-        } else {
-          handleActualGameOver();
-        }
+        // Delay before showing modals to let explosion animation play
+        const modalDelay = hasCollision ? 1500 : 0;
+        setTimeout(() => {
+          // Check if player can use continue
+          if (canUseContinue() && adManager.isRewardedReady()) {
+            setPendingGameOver(true);
+            setShowContinueModal(true);
+          } else {
+            handleActualGameOver();
+          }
+        }, modalDelay);
       } else if (event === 'scoreUpdate') {
         setScore(data as number);
       } else if (event === 'stateChange') {

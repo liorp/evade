@@ -17,10 +17,10 @@ interface ExplosionProps {
   onComplete: () => void;
 }
 
-const PARTICLE_COUNT = 10;
-const ANIMATION_DURATION = 400;
-const PARTICLE_SIZE = 8;
-const EXPLOSION_RADIUS = 80;
+const PARTICLE_COUNT = 12;
+const ANIMATION_DURATION = 800;
+const PARTICLE_SIZE = 10;
+const EXPLOSION_RADIUS = 100;
 
 interface ParticleProps {
   angle: number;
