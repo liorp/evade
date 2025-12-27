@@ -33,7 +33,8 @@ interface PlayScreenProps {
 export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { handedness, sfxEnabled } = useSettingsStore();
-  const { addScore } = useHighscoreStore();
+  const { addScore, getBestScore } = useHighscoreStore();
+  const bestScore = getBestScore();
   const [score, setScore] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
@@ -46,6 +47,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const [screenSize, setScreenSize] = useState(Dimensions.get('window'));
   const [currentTime, setCurrentTime] = useState(performance.now());
   const [dodgeFlashTrigger, setDodgeFlashTrigger] = useState(0);
+  const [passedBest, setPassedBest] = useState(false);
 
   const playerX = useSharedValue(screenSize.width / 2);
   const playerY = useSharedValue(screenSize.height / 2);
@@ -129,6 +131,12 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     }
   }, [handedness]);
 
+  useEffect(() => {
+    if (score > bestScore && bestScore > 0 && !passedBest) {
+      setPassedBest(true);
+    }
+  }, [score, bestScore, passedBest]);
+
   const handleStart = useCallback(() => {
     gameEngine.current?.resume();
   }, []);
@@ -171,6 +179,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       multiplier: { active: false, endTime: 0, value: 1 },
     });
     setDodgeFlashTrigger(0);
+    setPassedBest(false);
     newEnemyIds.current.clear();
     newBoosterIds.current.clear();
     playerX.value = screenSize.width / 2;
@@ -190,6 +199,11 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
           {/* Score and Active Effects */}
           <SafeAreaView style={styles.scoreContainer}>
             <Text style={styles.score}>{score}</Text>
+            {bestScore > 0 && hasStarted && !isGameOver && (
+              <Text style={[styles.bestScore, passedBest && styles.bestScorePassed]}>
+                {passedBest ? 'NEW BEST!' : `Best: ${bestScore}`}
+              </Text>
+            )}
             <View style={styles.effectsContainer}>
               {activeEffects.shield.active && (
                 <View style={styles.effectBadge}>
@@ -295,6 +309,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.score,
+  },
+  bestScore: {
+    fontSize: 14,
+    color: '#888888',
+    marginTop: 2,
+  },
+  bestScorePassed: {
+    color: '#ffdd44',
+    fontWeight: 'bold',
   },
   effectsContainer: {
     flexDirection: 'row',
