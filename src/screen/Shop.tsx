@@ -18,6 +18,9 @@ import {
 } from '../const/cosmetics';
 import { useShardStore } from '../state/shardStore';
 import { useCosmeticStore } from '../state/cosmeticStore';
+import { adManager } from '../ads/adManager';
+import { SHARD_PACKS } from '../const/iap';
+import { iapManager } from '../iap/iapManager';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -42,7 +45,7 @@ const CATEGORIES: { key: CosmeticCategory; label: string }[] = [
 export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<CosmeticCategory>('playerColor');
-  const { balance, spendShards } = useShardStore();
+  const { balance, spendShards, canWatchRewardedAd, recordRewardedAd, addShards } = useShardStore();
   const { isOwned, purchaseItem, equipItem, equipped } = useCosmeticStore();
 
   const items = getCosmeticItems(selectedCategory);
@@ -83,6 +86,25 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
 
   const handleEquip = (item: CosmeticItem) => {
     equipItem(item.category, item.id);
+  };
+
+  const handleWatchAdForShards = async () => {
+    if (!canWatchRewardedAd()) return;
+
+    const success = await adManager.showRewarded(() => {
+      recordRewardedAd();
+    });
+
+    if (!success) {
+      Alert.alert(t('common.error', 'Error'), t('shop.adFailed', 'Ad not available'));
+    }
+  };
+
+  const handleBuyShardPack = async (pack: (typeof SHARD_PACKS)[number]) => {
+    const success = await iapManager.purchaseShards(pack.productId as string);
+    if (success) {
+      addShards(pack.shards, 'purchase');
+    }
   };
 
   const isItemEquipped = (item: CosmeticItem): boolean => {
@@ -170,6 +192,31 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
       <ScrollView style={styles.itemsContainer} contentContainerStyle={styles.itemsGrid}>
         {items.map(renderItem)}
       </ScrollView>
+
+      {/* Earn & Buy Shards Section */}
+      <View style={styles.earnSection}>
+        {/* Watch Ad */}
+        {canWatchRewardedAd() ? (
+          <Pressable style={styles.earnButton} onPress={handleWatchAdForShards}>
+            <Text style={styles.earnButtonText}>{t('shop.watchAd', 'Watch Ad (+10 💎)')}</Text>
+          </Pressable>
+        ) : null}
+
+        {/* Buy Shard Packs */}
+        <View style={styles.packsContainer}>
+          {SHARD_PACKS.map((pack) => (
+            <Pressable
+              key={pack.productId}
+              style={styles.packCard}
+              onPress={() => handleBuyShardPack(pack)}
+            >
+              <Text style={styles.packShards}>{pack.shards} 💎</Text>
+              {'bonus' in pack && <Text style={styles.packBonus}>{pack.bonus}</Text>}
+              <Text style={styles.packPrice}>{pack.price}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -304,6 +351,52 @@ const styles = StyleSheet.create({
   priceText: {
     color: '#ffd700',
     fontSize: 12,
+    fontWeight: 'bold',
+  },
+  earnSection: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#2a2a4e',
+  },
+  earnButton: {
+    backgroundColor: '#44bb44',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  earnButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  packsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  packCard: {
+    flex: 1,
+    backgroundColor: '#2a2a4e',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  packShards: {
+    color: '#ffd700',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  packBonus: {
+    color: '#44bb44',
+    fontSize: 10,
+    marginBottom: 4,
+  },
+  packPrice: {
+    color: COLORS.text,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
