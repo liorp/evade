@@ -272,6 +272,9 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         <View style={styles.gameOverOverlay}>
           <View style={styles.gameOverModal}>
             <Text style={styles.gameOverTitle}>{t('play.gameOver')}</Text>
+            {passedBest && (
+              <Text style={styles.newBestText}>NEW BEST!</Text>
+            )}
             <Text style={styles.finalScore}>{score}</Text>
             <Pressable style={styles.button} onPress={handleRetry}>
               <Text style={styles.buttonText}>{t('common.retry')}</Text>
@@ -369,6 +372,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.enemy,
     marginBottom: 16,
+  },
+  newBestText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffdd44',
+    marginBottom: 8,
   },
   finalScore: {
     fontSize: 48,
