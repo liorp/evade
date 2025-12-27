@@ -13,6 +13,7 @@ import { PlayScreen } from './src/screen/Play';
 import { SettingsScreen } from './src/screen/Settings';
 import { HighScoresScreen } from './src/screen/HighScores';
 import { InstructionsScreen } from './src/screen/Instructions';
+import { ShopScreen } from './src/screen/Shop';
 import { COLORS } from './src/const/colors';
 
 type RootStackParamList = {
@@ -21,6 +22,7 @@ type RootStackParamList = {
   Settings: undefined;
   HighScores: undefined;
   Instructions: { fromFirstPlay?: boolean };
+  Shop: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -65,6 +67,7 @@ export default function App() {
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="HighScores" component={HighScoresScreen} />
           <Stack.Screen name="Instructions" component={InstructionsScreen} />
+          <Stack.Screen name="Shop" component={ShopScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
