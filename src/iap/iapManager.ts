@@ -1,4 +1,5 @@
 import * as ExpoIAP from 'expo-iap';
+import { Platform } from 'react-native';
 import { IAP_PRODUCTS } from '../const/iap';
 
 class IAPManager {
@@ -19,8 +20,12 @@ class IAPManager {
 
   private async loadProducts(): Promise<void> {
     try {
-      const productIds = [IAP_PRODUCTS.REMOVE_ADS];
-      this.products = await ExpoIAP.getProducts(productIds);
+      const sku = IAP_PRODUCTS.REMOVE_ADS as string;
+      // Use fetchProducts with correct API
+      this.products = await ExpoIAP.fetchProducts({
+        skus: [sku],
+        type: 'inapp',
+      });
     } catch (error) {
       console.warn('Failed to load products:', error);
     }
@@ -32,7 +37,16 @@ class IAPManager {
     }
 
     try {
-      await ExpoIAP.requestPurchase(IAP_PRODUCTS.REMOVE_ADS);
+      const sku = IAP_PRODUCTS.REMOVE_ADS as string;
+      // Use correct requestPurchase API
+      await ExpoIAP.requestPurchase({
+        request: Platform.select({
+          ios: { sku },
+          android: { skus: [sku] },
+          default: { sku },
+        }) as ExpoIAP.RequestPurchaseIOS | ExpoIAP.RequestPurchaseAndroid,
+        type: 'inapp',
+      });
       return true;
     } catch (error) {
       console.warn('Purchase failed:', error);
@@ -47,9 +61,9 @@ class IAPManager {
 
     try {
       const purchases = await ExpoIAP.getAvailablePurchases();
-      const hasRemoveAds = purchases.some(
-        (p) => p.productId === IAP_PRODUCTS.REMOVE_ADS
-      );
+      const sku = IAP_PRODUCTS.REMOVE_ADS as string;
+      // Product has 'id' not 'productId'
+      const hasRemoveAds = purchases.some((p) => p.id === sku);
       return hasRemoveAds;
     } catch (error) {
       console.warn('Restore failed:', error);
@@ -58,10 +72,10 @@ class IAPManager {
   }
 
   getRemoveAdsPrice(): string {
-    const product = this.products.find(
-      (p) => p.productId === IAP_PRODUCTS.REMOVE_ADS
-    );
-    return product?.localizedPrice ?? '$3.99';
+    const sku = IAP_PRODUCTS.REMOVE_ADS as string;
+    // Product has 'id' and 'displayPrice'
+    const product = this.products.find((p) => p.id === sku);
+    return product?.displayPrice ?? '$3.99';
   }
 
   async disconnect(): Promise<void> {

@@ -1,4 +1,4 @@
-import { GAME } from '../../constants/game';
+import { GAME } from '../../const/game';
 import { Enemy, Position } from '../types';
 
 function degreesToRadians(degrees: number): number {
@@ -63,20 +63,37 @@ export function isOffscreen(
   );
 }
 
+export function isExpired(enemy: Enemy, currentTime: number): boolean {
+  return currentTime - enemy.spawnTime > GAME.ENEMY_MAX_LIFETIME;
+}
+
+export interface UpdateEnemiesResult {
+  enemies: Enemy[];
+  removedCount: number;
+}
+
 export function updateEnemies(
   enemies: Enemy[],
   playerPosition: Position,
   deltaTime: number,
   currentTime: number,
-  speed: number,
   jitterIntensity: number,
   screenWidth: number,
   screenHeight: number
-): Enemy[] {
-  return enemies
-    .map((enemy) => {
-      const withJitter = updateEnemyJitter(enemy, currentTime, jitterIntensity);
-      return moveEnemy(withJitter, playerPosition, deltaTime, speed);
-    })
-    .filter((enemy) => !isOffscreen(enemy, screenWidth, screenHeight));
+): UpdateEnemiesResult {
+  const moved = enemies.map((enemy) => {
+    const withJitter = updateEnemyJitter(enemy, currentTime, jitterIntensity);
+    // Use individual enemy speed instead of global speed
+    return moveEnemy(withJitter, playerPosition, deltaTime, enemy.speed);
+  });
+
+  const remaining = moved.filter(
+    (enemy) =>
+      !isOffscreen(enemy, screenWidth, screenHeight) && !isExpired(enemy, currentTime)
+  );
+
+  return {
+    enemies: remaining,
+    removedCount: moved.length - remaining.length,
+  };
 }

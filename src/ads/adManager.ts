@@ -11,52 +11,80 @@ class AdManager {
   private rewarded: RewardedAd | null = null;
   private isInterstitialLoaded = false;
   private isRewardedLoaded = false;
+  private interstitialUnsubscribers: (() => void)[] = [];
+  private rewardedUnsubscribers: (() => void)[] = [];
 
   async initialize(): Promise<void> {
     this.loadInterstitial();
     this.loadRewarded();
   }
 
+  private cleanupInterstitial(): void {
+    this.interstitialUnsubscribers.forEach((unsub) => unsub());
+    this.interstitialUnsubscribers = [];
+  }
+
+  private cleanupRewarded(): void {
+    this.rewardedUnsubscribers.forEach((unsub) => unsub());
+    this.rewardedUnsubscribers = [];
+  }
+
   private loadInterstitial(): void {
+    this.cleanupInterstitial();
+
     this.interstitial = InterstitialAd.createForAdRequest(AD_UNIT_IDS.interstitial, {
       requestNonPersonalizedAdsOnly: true,
     });
 
-    this.interstitial.addAdEventListener(AdEventType.LOADED, () => {
-      this.isInterstitialLoaded = true;
-    });
+    this.interstitialUnsubscribers.push(
+      this.interstitial.addAdEventListener(AdEventType.LOADED, () => {
+        this.isInterstitialLoaded = true;
+      })
+    );
 
-    this.interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-      this.isInterstitialLoaded = false;
-      this.loadInterstitial(); // Preload next ad
-    });
+    this.interstitialUnsubscribers.push(
+      this.interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+        this.isInterstitialLoaded = false;
+        this.loadInterstitial(); // Preload next ad
+      })
+    );
 
-    this.interstitial.addAdEventListener(AdEventType.ERROR, (error) => {
-      console.warn('Interstitial ad error:', error);
-      this.isInterstitialLoaded = false;
-    });
+    this.interstitialUnsubscribers.push(
+      this.interstitial.addAdEventListener(AdEventType.ERROR, (error) => {
+        console.warn('Interstitial ad error:', error);
+        this.isInterstitialLoaded = false;
+      })
+    );
 
     this.interstitial.load();
   }
 
   private loadRewarded(): void {
+    this.cleanupRewarded();
+
     this.rewarded = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded, {
       requestNonPersonalizedAdsOnly: true,
     });
 
-    this.rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
-      this.isRewardedLoaded = true;
-    });
+    this.rewardedUnsubscribers.push(
+      this.rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+        this.isRewardedLoaded = true;
+      })
+    );
 
-    this.rewarded.addAdEventListener(AdEventType.CLOSED, () => {
-      this.isRewardedLoaded = false;
-      this.loadRewarded(); // Preload next ad
-    });
+    this.rewardedUnsubscribers.push(
+      this.rewarded.addAdEventListener(AdEventType.CLOSED, () => {
+        this.isRewardedLoaded = false;
+        this.loadRewarded(); // Preload next ad
+      })
+    );
 
-    this.rewarded.addAdEventListener(AdEventType.ERROR, (error) => {
-      console.warn('Rewarded ad error:', error);
-      this.isRewardedLoaded = false;
-    });
+    this.rewardedUnsubscribers.push(
+      this.rewarded.addAdEventListener(AdEventType.ERROR, (error) => {
+        console.warn('Rewarded ad error:', error);
+        this.isRewardedLoaded = false;
+      })
+    );
 
     this.rewarded.load();
   }
@@ -105,6 +133,13 @@ class AdManager {
 
   isRewardedReady(): boolean {
     return this.isRewardedLoaded;
+  }
+
+  destroy(): void {
+    this.cleanupInterstitial();
+    this.cleanupRewarded();
+    this.interstitial = null;
+    this.rewarded = null;
   }
 }
 

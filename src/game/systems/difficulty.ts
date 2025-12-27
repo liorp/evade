@@ -1,4 +1,4 @@
-import { GAME } from '../../constants/game';
+import { GAME } from '../../const/game';
 import { DifficultyParams, SpawnZone } from '../types';
 
 function lerp(start: number, end: number, elapsed: number, duration: number): number {

@@ -2,14 +2,30 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to Expo",
+      "name": "Expo: Debug iOS Simulator",
+      "type": "expo",
+      "request": "launch",
+      "platform": "ios",
+      "bundlerHost": "127.0.0.1",
+      "bundlerPort": 8081
+    },
+    {
+      "name": "Expo: Debug Android Emulator",
+      "type": "expo",
+      "request": "launch",
+      "platform": "android",
+      "bundlerHost": "127.0.0.1",
+      "bundlerPort": 8081
+    },
+    {
+      "name": "Expo: Attach to Dev Client",
       "type": "expo",
       "request": "attach",
       "bundlerHost": "127.0.0.1",
       "bundlerPort": 8081
     },
     {
-      "name": "Attach to Hermes (React Native)",
+      "name": "Debug JS (Hermes - Attach)",
       "type": "reactnativedirect",
       "request": "attach",
       "cwd": "${workspaceFolder}",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
@@ -20,10 +20,12 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
   const { t } = useTranslation();
   const [countdown, setCountdown] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     if (!visible) {
       setCountdown(3);
+      isProcessingRef.current = false;
       return;
     }
 
@@ -31,7 +33,10 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          onDecline();
+          // Only decline if not already processing an ad
+          if (!isProcessingRef.current) {
+            onDecline();
+          }
           return 0;
         }
         return prev - 1;
@@ -42,6 +47,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
   }, [visible, onDecline]);
 
   const handleWatchAd = async () => {
+    isProcessingRef.current = true;
     setIsLoading(true);
     const success = await adManager.showRewarded(() => {
       onContinue();
@@ -49,6 +55,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
     setIsLoading(false);
 
     if (!success) {
+      isProcessingRef.current = false;
       // Ad failed to show, just decline
       onDecline();
     }
