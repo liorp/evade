@@ -1,3 +1,4 @@
+export { ChromeText } from './ChromeText';
 export { StarField } from './StarField';
 export { PerspectiveGrid } from './PerspectiveGrid';
 export { HorizonSun } from './HorizonSun';
