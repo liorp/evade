@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
 import { audioManager } from '../audio/audioManager';
 import { useSettingsStore } from '../state/settingsStore';
+import { useShardStore } from '../state/shardStore';
 import { MenuBackground } from '../entity/MenuBackground';
 
 type RootStackParamList = {
@@ -20,6 +21,7 @@ type RootStackParamList = {
   Settings: undefined;
   HighScores: undefined;
   Instructions: { fromFirstPlay?: boolean };
+  Shop: undefined;
 };
 
 interface MainMenuProps {
@@ -29,6 +31,7 @@ interface MainMenuProps {
 export const MainMenuScreen: React.FC<MainMenuProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { musicEnabled, hasSeenTutorial, setHasSeenTutorial } = useSettingsStore();
+  const { balance } = useShardStore();
   const glowOpacity = useSharedValue(0.3);
 
   useEffect(() => {
@@ -113,6 +116,21 @@ export const MainMenuScreen: React.FC<MainMenuProps> = ({ navigation }) => {
           >
             <Text style={styles.buttonText}>{t('mainMenu.settings')}</Text>
           </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              styles.shopButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => navigation.navigate('Shop')}
+          >
+            <View style={styles.shopButtonContent}>
+              <Text style={styles.buttonText}>{t('mainMenu.shop', 'Shop')}</Text>
+              <View style={styles.shardBadge}>
+                <Text style={styles.shardBadgeText}>{balance} 💎</Text>
+              </View>
+            </View>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>
@@ -173,5 +191,24 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.text,
+  },
+  shopButton: {
+    backgroundColor: '#4a3a8a',
+  },
+  shopButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  shardBadge: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  shardBadgeText: {
+    color: '#ffd700',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
