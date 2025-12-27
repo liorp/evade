@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { COLORS } from '../const/colors';
 import { adManager } from '../ads/adManager';
-import { HexFrame, ChromeText, GlassButton } from './ui';
+import { HexFrame, ChromeText, GlassButton } from '../ui';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 

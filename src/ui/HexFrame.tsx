@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
   cancelAnimation,
 } from 'react-native-reanimated';
-import { COLORS } from '../../const/colors';
+import { COLORS } from '../const/colors';
 
 const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
 

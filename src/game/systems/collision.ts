@@ -1,4 +1,4 @@
-import { GAME } from '../../const/game';
+import { GAME } from '../constants';
 import { Position, Enemy, Booster } from '../types';
 
 function distance(a: Position, b: Position): number {

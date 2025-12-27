@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../components/ui';
+import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;

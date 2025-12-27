@@ -8,9 +8,9 @@ import { useSettingsStore } from '../state/settingsStore';
 import { usePurchaseStore } from '../state/purchaseStore';
 import { useAdStore } from '../state/adStore';
 import { iapManager } from '../iap/iapManager';
-import { IAP_PRICES } from '../const/iap';
+import { IAP_PRICES } from '../iap/constants';
 import { trackSettingChanged } from '../analytics';
-import { SynthwaveBackground, ChromeText, GlassButton, NeonToggle } from '../components/ui';
+import { SynthwaveBackground, ChromeText, GlassButton, NeonToggle } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;

@@ -1,5 +1,5 @@
 import { isExpoGo, isWeb } from '../utils/environment';
-import { AD_UNIT_IDS } from '../const/ads';
+import { AD_UNIT_IDS } from './constants';
 import { trackAdShown, trackAdCompleted, trackAdFailed, AdPlacement } from '../analytics';
 
 // Conditionally import real, web, or mock ads based on platform

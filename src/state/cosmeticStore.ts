@@ -9,7 +9,7 @@ import {
   EnemyTheme,
   BackgroundTheme,
   CosmeticCategory,
-} from '../const/cosmetics';
+} from '../cosmetics/constants';
 
 interface EquippedCosmetics {
   playerColor: PlayerColorId;

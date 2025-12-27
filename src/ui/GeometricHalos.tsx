@@ -8,7 +8,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import Svg, { Polygon } from 'react-native-svg';
-import { COLORS } from '../../const/colors';
+import { COLORS } from '../const/colors';
 
 interface HaloProps {
   size: number;

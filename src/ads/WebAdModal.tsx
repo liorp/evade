@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable, Modal } from 'react-native';
 import { webAdEventBus } from './webAds';
-import { WEB_AD_CONFIG } from '../const/ads';
+import { WEB_AD_CONFIG } from './constants';
 import { COLORS } from '../const/colors';
 
 type AdType = 'interstitial' | 'rewarded' | null;

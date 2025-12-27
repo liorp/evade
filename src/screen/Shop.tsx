@@ -15,11 +15,11 @@ import {
   CosmeticCategory,
   CosmeticItem,
   getCosmeticItems,
-} from '../const/cosmetics';
+} from '../cosmetics/constants';
 import { useShardStore } from '../state/shardStore';
 import { useCosmeticStore } from '../state/cosmeticStore';
 import { adManager } from '../ads/adManager';
-import { SHARD_PACKS } from '../const/iap';
+import { SHARD_PACKS } from '../iap/constants';
 import { iapManager } from '../iap/iapManager';
 import {
   trackShopOpened,
@@ -27,7 +27,7 @@ import {
   trackItemPreviewed,
   trackItemPurchased,
 } from '../analytics';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../components/ui';
+import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;

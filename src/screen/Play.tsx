@@ -21,19 +21,19 @@ import { Player } from '../entity/Player';
 import { Enemy } from '../entity/Enemy';
 import { Booster } from '../entity/Booster';
 import { COLORS } from '../const/colors';
-import { GAME } from '../const/game';
+import { GAME } from '../game/constants';
 import { useSettingsStore } from '../state/settingsStore';
 import { useHighscoreStore } from '../state/highscoreStore';
 import { audioManager } from '../audio/audioManager';
-import { ContinueModal } from '../components/ContinueModal';
-import { GameOverModal } from '../components/GameOverModal';
+import { ContinueModal } from '../game/ContinueModal';
+import { GameOverModal } from '../game/GameOverModal';
 import { useAdStore } from '../state/adStore';
 import { adManager } from '../ads/adManager';
-import { AD_CONFIG } from '../const/ads';
+import { AD_CONFIG } from '../ads/constants';
 import { useCosmeticStore } from '../state/cosmeticStore';
 import { useShardStore, calculateShardsFromScore } from '../state/shardStore';
 import { GameBackground } from '../entity/GameBackground';
-import { ChromeText } from '../components/ui';
+import { ChromeText } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;

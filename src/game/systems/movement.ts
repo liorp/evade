@@ -1,4 +1,4 @@
-import { GAME } from '../../const/game';
+import { GAME } from '../constants';
 import { Enemy, Position } from '../types';
 
 function degreesToRadians(degrees: number): number {

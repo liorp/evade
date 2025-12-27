@@ -7,7 +7,7 @@ import Animated, {
   withRepeat,
   withSequence,
 } from 'react-native-reanimated';
-import { GAME } from '../const/game';
+import { GAME } from '../game/constants';
 import { BoosterType } from '../game/types';
 
 interface BoosterProps {

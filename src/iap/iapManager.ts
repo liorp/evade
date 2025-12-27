@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { isExpoGo, isWeb } from '../utils/environment';
-import { IAP_PRODUCTS } from '../const/iap';
+import { IAP_PRODUCTS } from './constants';
 import { trackIapInitiated, trackIapCompleted, trackIapFailed } from '../analytics';
 import type { ProductOrSubscription, RequestPurchasePropsByPlatforms, Purchase } from '../mocks/expoIap';
 

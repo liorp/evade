@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { BackgroundTheme, BACKGROUND_THEMES } from '../const/cosmetics';
+import { BackgroundTheme, BACKGROUND_THEMES } from '../cosmetics/constants';
 
 interface GameBackgroundProps {
   theme?: BackgroundTheme;

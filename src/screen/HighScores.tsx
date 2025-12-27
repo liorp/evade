@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
 import { useHighscoreStore } from '../state/highscoreStore';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../components/ui';
+import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;

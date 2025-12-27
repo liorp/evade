@@ -1,4 +1,4 @@
-import { GAME } from '../../const/game';
+import { GAME } from '../constants';
 import { Position, Handedness, SpawnZone, Enemy, SpeedTier, Booster, BoosterType } from '../types';
 
 interface SpawnPoint {

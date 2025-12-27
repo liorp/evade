@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
 import { audioManager } from '../audio/audioManager';
 import { useSettingsStore } from '../state/settingsStore';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../components/ui';
+import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;

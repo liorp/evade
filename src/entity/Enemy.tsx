@@ -5,9 +5,9 @@ import Animated, {
   withTiming,
   useSharedValue,
 } from 'react-native-reanimated';
-import { GAME } from '../const/game';
+import { GAME } from '../game/constants';
 import { SpeedTier } from '../game/types';
-import { EnemyTheme, ENEMY_THEMES } from '../const/cosmetics';
+import { EnemyTheme, ENEMY_THEMES } from '../cosmetics/constants';
 
 interface EnemyProps {
   x: number;

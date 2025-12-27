@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   cancelAnimation,
 } from 'react-native-reanimated';
-import { COLORS } from '../../const/colors';
+import { COLORS } from '../const/colors';
 
 interface ChromeTextProps {
   children: string;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Svg, { Ellipse, Rect, Defs, LinearGradient, Stop, ClipPath } from 'react-native-svg';
-import { COLORS, GRADIENTS } from '../../const/colors';
+import { COLORS, GRADIENTS } from '../const/colors';
 
 interface HorizonSunProps {
   position?: number; // 0-1, vertical position (0 = top, 1 = bottom)

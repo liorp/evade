@@ -11,7 +11,7 @@ import {
   isBoosterExpired,
 } from './systems/spawn';
 import { updateEnemies } from './systems/movement';
-import { GAME } from '../const/game';
+import { GAME } from './constants';
 
 export type GameEventType = 'gameOver' | 'scoreUpdate' | 'stateChange' | 'boosterCollected' | 'closeDodge';
 export type GameEventCallback = (event: GameEventType, data?: unknown) => void;

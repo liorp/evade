@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { HexFrame, ChromeText, GlassButton } from './ui';
+import { HexFrame, ChromeText, GlassButton } from '../ui';
 import { COLORS } from '../const/colors';
 
 interface GameOverModalProps {

@@ -5,7 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
-import { COLORS } from '../../const/colors';
+import { COLORS } from '../const/colors';
 
 interface NeonToggleProps {
   value: boolean;

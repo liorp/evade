@@ -10,14 +10,14 @@ import Animated, {
   interpolateColor,
   Easing,
 } from 'react-native-reanimated';
-import { GAME } from '../const/game';
+import { GAME } from '../game/constants';
 import {
   PlayerShape,
   PlayerColorId,
   PlayerTrail,
   PlayerGlow,
   PLAYER_COLORS,
-} from '../const/cosmetics';
+} from '../cosmetics/constants';
 
 interface PlayerProps {
   x: SharedValue<number>;
