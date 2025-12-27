@@ -182,7 +182,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
     overflow: 'visible',
   },
   countdownContainer: {
@@ -212,6 +213,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    minWidth: 260,
+    minWidth: 280,
   },
 });
