@@ -5,7 +5,7 @@ import {
   trackContinueUsed,
   trackBoosterCollected,
 } from '../analytics';
-import { StyleSheet, View, Text, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, ViewStyle, TextStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Gesture,
@@ -33,6 +33,7 @@ import { AD_CONFIG } from '../const/ads';
 import { useCosmeticStore } from '../state/cosmeticStore';
 import { useShardStore, calculateShardsFromScore } from '../state/shardStore';
 import { GameBackground } from '../entity/GameBackground';
+import { ChromeText } from '../components/ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -315,7 +316,9 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
 
           {/* Score and Active Effects */}
           <SafeAreaView style={styles.scoreContainer}>
-            <Text style={styles.score}>{score}</Text>
+            <ChromeText size={28} color="gold" glowPulse={false}>
+              {score.toString()}
+            </ChromeText>
             {bestScore > 0 && hasStarted && !isGameOver && (
               <Text style={[styles.bestScore, passedBest && styles.bestScorePassed]}>
                 {passedBest ? 'NEW BEST!' : `Best: ${bestScore}`}
@@ -323,13 +326,13 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
             )}
             <View style={styles.effectsContainer}>
               {activeEffects.shield.active && (
-                <View style={styles.effectBadge}>
-                  <Text style={styles.effectIcon}>{'\u25CB'}</Text>
+                <View style={styles.shieldBadge}>
+                  <Text style={styles.shieldIcon}>{'\u25CB'}</Text>
                 </View>
               )}
               {activeEffects.multiplier.active && (
-                <View style={[styles.effectBadge, styles.multiplierBadge]}>
-                  <Text style={styles.effectIcon}>x{activeEffects.multiplier.value}</Text>
+                <View style={styles.multiplierBadge}>
+                  <Text style={styles.multiplierIcon}>x{activeEffects.multiplier.value}</Text>
                 </View>
               )}
             </View>
@@ -384,8 +387,10 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
 
       {/* Start Overlay - only shown before game starts */}
       {!hasStarted && !isGameOver && (
-        <View style={styles.pauseOverlay} pointerEvents="none">
-          <Text style={styles.pauseText}>{t('play.touchToStart')}</Text>
+        <View style={styles.startOverlay} pointerEvents="none">
+          <ChromeText size={28} color="cyan" glowPulse={true}>
+            {t('play.touchToStart')}
+          </ChromeText>
         </View>
       )}
 
@@ -425,18 +430,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
-  score: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.score,
-  },
   bestScore: {
     fontSize: 14,
-    color: '#888888',
+    color: COLORS.textMuted,
     marginTop: 2,
   },
   bestScorePassed: {
-    color: '#ffdd44',
+    color: COLORS.chromeGold,
     fontWeight: 'bold',
   },
   effectsContainer: {
@@ -444,31 +444,48 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 4,
   },
-  effectBadge: {
-    backgroundColor: '#44ff44',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  multiplierBadge: {
-    backgroundColor: '#ffaa44',
-  },
-  effectIcon: {
+  shieldBadge: {
+    backgroundColor: 'rgba(0, 245, 255, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.neonCyan,
+    shadowColor: COLORS.neonCyan,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 4,
+  } as ViewStyle,
+  shieldIcon: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#000',
-  },
-  pauseOverlay: {
+    color: COLORS.neonCyan,
+  } as TextStyle,
+  multiplierBadge: {
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.chromeGold,
+    shadowColor: COLORS.chromeGold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 4,
+  } as ViewStyle,
+  multiplierIcon: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.chromeGold,
+  } as TextStyle,
+  startOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.pauseOverlay,
+    backgroundColor: 'rgba(10, 10, 18, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 100,
     elevation: 100,
-  },
-  pauseText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.text,
   },
 });
