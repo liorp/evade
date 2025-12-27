@@ -5,7 +5,7 @@ import {
   trackContinueUsed,
   trackBoosterCollected,
 } from '../analytics';
-import { StyleSheet, View, Text, Dimensions, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Gesture,
@@ -26,6 +26,7 @@ import { useSettingsStore } from '../state/settingsStore';
 import { useHighscoreStore } from '../state/highscoreStore';
 import { audioManager } from '../audio/audioManager';
 import { ContinueModal } from '../components/ContinueModal';
+import { GameOverModal } from '../components/GameOverModal';
 import { useAdStore } from '../state/adStore';
 import { adManager } from '../ads/adManager';
 import { AD_CONFIG } from '../const/ads';
@@ -396,29 +397,14 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       />
 
       {/* Game Over Modal - outside gesture detector for button presses */}
-      {isGameOver && !showContinueModal && (
-        <View style={styles.gameOverOverlay}>
-          <View style={styles.gameOverModal}>
-            <Text style={styles.gameOverTitle}>{t('play.gameOver')}</Text>
-            {passedBest && (
-              <Text style={styles.newBestText}>NEW BEST!</Text>
-            )}
-            <Text style={styles.finalScore}>{score}</Text>
-            {shardsEarned > 0 && (
-              <Text style={styles.shardsEarned}>+{shardsEarned} 💎</Text>
-            )}
-            <Pressable style={styles.button} onPress={handleRetry}>
-              <Text style={styles.buttonText}>{t('common.retry')}</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.button, styles.secondaryButton]}
-              onPress={handleBackToMenu}
-            >
-              <Text style={styles.buttonText}>{t('common.menu')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
+      <GameOverModal
+        visible={isGameOver && !showContinueModal}
+        score={score}
+        isNewBest={passedBest}
+        shardsEarned={shardsEarned}
+        onRetry={handleRetry}
+        onMenu={handleBackToMenu}
+      />
     </GestureHandlerRootView>
   );
 };
@@ -482,60 +468,6 @@ const styles = StyleSheet.create({
   },
   pauseText: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  gameOverOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.pauseOverlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  gameOverModal: {
-    backgroundColor: '#1a1a2e',
-    padding: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    minWidth: 250,
-  },
-  gameOverTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.enemy,
-    marginBottom: 16,
-  },
-  newBestText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffdd44',
-    marginBottom: 8,
-  },
-  finalScore: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: COLORS.player,
-    marginBottom: 8,
-  },
-  shardsEarned: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffd700',
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: COLORS.menuAccent,
-    paddingVertical: 12,
-    paddingHorizontal: 48,
-    borderRadius: 8,
-    marginVertical: 8,
-    minWidth: 180,
-    alignItems: 'center',
-  },
-  secondaryButton: {
-    backgroundColor: COLORS.menuAccentDark,
-  },
-  buttonText: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.text,
   },
