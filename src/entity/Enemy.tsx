@@ -7,43 +7,52 @@ import Animated, {
 } from 'react-native-reanimated';
 import { GAME } from '../const/game';
 import { SpeedTier } from '../game/types';
+import { EnemyTheme, ENEMY_THEMES } from '../const/cosmetics';
 
 interface EnemyProps {
   x: number;
   y: number;
   speedTier: SpeedTier;
-  ttlPercent: number; // 0 to 1, where 1 is full TTL
+  ttlPercent: number;
   isNew?: boolean;
+  theme?: EnemyTheme;
 }
 
-// Color interpolation based on TTL
-// Full TTL (1.0): Red (#ff4444)
-// Half TTL (0.5): Orange (#ff8844)
-// Low TTL (0.0): Yellow (#ffcc44)
-function getTTLColor(ttlPercent: number): string {
+function getTTLColor(ttlPercent: number, baseColor: string): string {
   const clampedTTL = Math.max(0, Math.min(1, ttlPercent));
 
-  // Interpolate from yellow (low TTL) to red (high TTL)
-  // Red: 255, Green: 68 -> 204, Blue: 68
-  const red = 255;
-  const green = Math.round(68 + (1 - clampedTTL) * 136); // 68 at full, 204 at empty
-  const blue = 68;
+  // Parse base color
+  const hex = baseColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
 
-  return `rgb(${red}, ${green}, ${blue})`;
+  // Fade towards yellow as TTL decreases
+  const fadeR = r;
+  const fadeG = Math.min(255, g + Math.round((1 - clampedTTL) * (200 - g)));
+  const fadeB = Math.round(b * clampedTTL);
+
+  return `rgb(${fadeR}, ${fadeG}, ${fadeB})`;
 }
 
-export const Enemy: React.FC<EnemyProps> = ({ x, y, speedTier, ttlPercent, isNew = false }) => {
+export const Enemy: React.FC<EnemyProps> = ({
+  x,
+  y,
+  speedTier,
+  ttlPercent,
+  isNew = false,
+  theme = 'classic',
+}) => {
+  const themeData = ENEMY_THEMES[theme];
   const fadeIn = useSharedValue(isNew ? 0 : 1);
 
   React.useEffect(() => {
     if (isNew) {
       fadeIn.value = withTiming(1, { duration: 200 });
     }
-  }, []);
+  }, [isNew, fadeIn]);
 
-  const color = getTTLColor(ttlPercent);
-
-  // Fade out in last ~200ms (2.5% of 8000ms lifetime)
+  const color = getTTLColor(ttlPercent, themeData.colors.base);
   const fadeOut = ttlPercent < 0.025 ? ttlPercent / 0.025 : 1;
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -56,41 +65,21 @@ export const Enemy: React.FC<EnemyProps> = ({ x, y, speedTier, ttlPercent, isNew
 
   // Different shapes based on speed tier
   if (speedTier === 'slow') {
-    // Circle (default)
     return (
       <Animated.View
-        style={[
-          styles.enemyBase,
-          styles.circle,
-          { backgroundColor: color },
-          animatedStyle,
-        ]}
+        style={[styles.enemyBase, styles.circle, { backgroundColor: color }, animatedStyle]}
       />
     );
   } else if (speedTier === 'medium') {
-    // Square (rotated 45deg to look like diamond)
     return (
       <Animated.View
-        style={[
-          styles.enemyBase,
-          styles.square,
-          { backgroundColor: color },
-          animatedStyle,
-        ]}
+        style={[styles.enemyBase, styles.square, { backgroundColor: color }, animatedStyle]}
       />
     );
   } else {
-    // Fast - Triangle (using borders)
     return (
       <Animated.View style={[styles.enemyBase, animatedStyle]}>
-        <View
-          style={[
-            styles.triangle,
-            {
-              borderBottomColor: color,
-            },
-          ]}
-        />
+        <View style={[styles.triangle, { borderBottomColor: color }]} />
       </Animated.View>
     );
   }
