@@ -38,21 +38,27 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
   const { t } = useTranslation();
   const [countdown, setCountdown] = useState(COUNTDOWN_DURATION);
   const [isLoading, setIsLoading] = useState(false);
+  const [countdownExpired, setCountdownExpired] = useState(false);
   const isProcessingRef = useRef(false);
 
-  // Animated value for the ring progress (1 = full, 0 = empty)
   const ringProgress = useSharedValue(1);
+
+  useEffect(() => {
+    if (countdownExpired && !isProcessingRef.current) {
+      onDecline();
+    }
+  }, [countdownExpired, onDecline]);
 
   useEffect(() => {
     if (!visible) {
       setCountdown(COUNTDOWN_DURATION);
+      setCountdownExpired(false);
       isProcessingRef.current = false;
       cancelAnimation(ringProgress);
       ringProgress.value = 1;
       return;
     }
 
-    // Start the ring animation from full to empty over the countdown duration
     ringProgress.value = withTiming(0, {
       duration: COUNTDOWN_DURATION * 1000,
       easing: Easing.linear,
@@ -62,10 +68,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          // Only decline if not already processing an ad
-          if (!isProcessingRef.current) {
-            onDecline();
-          }
+          setCountdownExpired(true);
           return 0;
         }
         return prev - 1;
@@ -76,7 +79,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
       clearInterval(timer);
       cancelAnimation(ringProgress);
     };
-  }, [visible, onDecline, ringProgress]);
+  }, [visible, ringProgress]);
 
   const animatedCircleProps = useAnimatedProps(() => ({
     strokeDashoffset: RING_CIRCUMFERENCE * (1 - ringProgress.value),
@@ -92,7 +95,6 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
 
     if (!success) {
       isProcessingRef.current = false;
-      // Ad failed to show, just decline
       onDecline();
     }
   };
@@ -101,16 +103,14 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
 
   return (
     <View style={styles.overlay}>
-      <HexFrame width={320} height={340} color="cyan" glowPulse style={styles.frame}>
+      <HexFrame width={300} height={380} color="cyan" glowPulse style={styles.frame}>
         <View style={styles.content}>
           <ChromeText size={32} color="cyan" glowPulse={false}>
             {t('continue.title', 'Continue?')}
           </ChromeText>
 
-          {/* Countdown ring with number */}
           <View style={styles.countdownContainer}>
             <Svg width={RING_SIZE} height={RING_SIZE} style={styles.ringSvg}>
-              {/* Background ring */}
               <Circle
                 cx={RING_SIZE / 2}
                 cy={RING_SIZE / 2}
@@ -119,7 +119,6 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
                 strokeWidth={RING_STROKE_WIDTH}
                 fill="none"
               />
-              {/* Animated progress ring */}
               <AnimatedCircle
                 cx={RING_SIZE / 2}
                 cy={RING_SIZE / 2}
@@ -141,28 +140,27 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
             </View>
           </View>
 
-          {/* Watch Ad button */}
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator color={COLORS.neonCyan} size="large" />
-            </View>
-          ) : (
+          <View style={styles.buttonsContainer}>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator color={COLORS.neonCyan} size="large" />
+              </View>
+            ) : (
+              <GlassButton
+                title={t('continue.watchAd', 'Watch Ad to Continue')}
+                onPress={handleWatchAd}
+                variant="primary"
+                disabled={!adManager.isRewardedReady()}
+                style={styles.button}
+              />
+            )}
             <GlassButton
-              title={t('continue.watchAd', 'Watch Ad to Continue')}
-              onPress={handleWatchAd}
-              variant="primary"
-              disabled={!adManager.isRewardedReady()}
+              title={t('continue.decline', 'No Thanks')}
+              onPress={onDecline}
+              variant="secondary"
               style={styles.button}
             />
-          )}
-
-          {/* Decline button */}
-          <GlassButton
-            title={t('continue.decline', 'No Thanks')}
-            onPress={onDecline}
-            variant="secondary"
-            style={styles.button}
-          />
+          </View>
         </View>
       </HexFrame>
     </View>
@@ -172,10 +170,9 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: COLORS.pauseOverlay,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 200,
   },
   frame: {
     alignItems: 'center',
@@ -185,14 +182,16 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: 16,
+    overflow: 'visible',
   },
   countdownContainer: {
     width: RING_SIZE,
     height: RING_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 20,
+    marginVertical: 12,
+    overflow: 'visible',
   },
   ringSvg: {
     position: 'absolute',
@@ -200,15 +199,19 @@ const styles = StyleSheet.create({
   countdownTextContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
+  },
+  buttonsContainer: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 12,
   },
   loadingContainer: {
     height: 52,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 8,
   },
   button: {
-    marginVertical: 8,
     minWidth: 260,
   },
 });

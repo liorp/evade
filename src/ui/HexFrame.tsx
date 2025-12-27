@@ -66,25 +66,29 @@ export const HexFrame: React.FC<HexFrameProps> = ({
 
   return (
     <View style={[styles.container, { width, height }, style]}>
-      <View style={styles.background}>{children}</View>
-      <Svg width={width} height={height} style={styles.frame} pointerEvents="none">
-        <AnimatedPolygon
-          points={points}
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth={2}
-          animatedProps={animatedProps}
-        />
-        {/* Inner glow line */}
-        <Polygon
-          points={points}
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth={1}
-          opacity={0.3}
-          transform={`translate(2, 2) scale(${(width - 4) / width}, ${(height - 4) / height})`}
-        />
-      </Svg>
+      <View style={styles.frame} pointerEvents="none">
+        <Svg width={width} height={height}>
+          {/* Background fill matching the hex shape */}
+          <Polygon points={points} fill={COLORS.backgroundPanel} stroke="none" />
+          <AnimatedPolygon
+            points={points}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={2}
+            animatedProps={animatedProps}
+          />
+          {/* Inner glow line */}
+          <Polygon
+            points={points}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={1}
+            opacity={0.3}
+            transform={`translate(2, 2) scale(${(width - 4) / width}, ${(height - 4) / height})`}
+          />
+        </Svg>
+      </View>
+      <View style={styles.content}>{children}</View>
     </View>
   );
 };
@@ -93,14 +97,13 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
   },
-  background: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.backgroundPanel,
-    margin: 1,
-  },
   frame: {
     position: 'absolute',
     top: 0,
     left: 0,
+  },
+  content: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'visible',
   },
 });
