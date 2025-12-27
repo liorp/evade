@@ -73,16 +73,36 @@ export default function App() {
             contentStyle: { backgroundColor: COLORS.background },
           }}
         >
-          <Stack.Screen name="MainMenu" component={MainMenuScreen} />
+          <Stack.Screen
+            name="MainMenu"
+            component={MainMenuScreen}
+            options={{ animation: 'fade' }}
+          />
           <Stack.Screen
             name="Play"
             component={PlayScreen}
             options={{ animation: 'fade', gestureEnabled: false }}
           />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
-          <Stack.Screen name="HighScores" component={HighScoresScreen} />
-          <Stack.Screen name="Instructions" component={InstructionsScreen} />
-          <Stack.Screen name="Shop" component={ShopScreen} />
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="HighScores"
+            component={HighScoresScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="Instructions"
+            component={InstructionsScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="Shop"
+            component={ShopScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
       {isWeb && <WebAdModal />}
