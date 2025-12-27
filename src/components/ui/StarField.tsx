@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { COLORS } from '../../const/colors';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,8 +8,6 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-
-const { width, height } = Dimensions.get('window');
 
 interface Star {
   id: number;
@@ -22,7 +21,7 @@ interface Star {
 const StarParticle: React.FC<{ star: Star }> = ({ star }) => {
   const opacity = useSharedValue(star.opacity * 0.3);
 
-  React.useEffect(() => {
+  useEffect(() => {
     opacity.value = withRepeat(
       withTiming(star.opacity, {
         duration: star.duration,
@@ -55,6 +54,8 @@ const StarParticle: React.FC<{ star: Star }> = ({ star }) => {
 };
 
 export const StarField: React.FC<{ count?: number }> = ({ count = 50 }) => {
+  const { width, height } = useWindowDimensions();
+
   const stars = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
@@ -64,7 +65,7 @@ export const StarField: React.FC<{ count?: number }> = ({ count = 50 }) => {
       opacity: 0.3 + Math.random() * 0.7,
       duration: 2000 + Math.random() * 3000,
     }));
-  }, [count]);
+  }, [count, width, height]);
 
   return (
     <View style={styles.container} pointerEvents="none">
@@ -81,6 +82,6 @@ const styles = StyleSheet.create({
   },
   star: {
     position: 'absolute',
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.textPrimary,
   },
 });
