@@ -158,8 +158,8 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
           });
         }
 
-        // Delay before showing modals to let explosion animation play (3 seconds)
-        const modalDelay = hasCollision ? 3000 : 0;
+        // Delay before showing modals to let explosion animation play
+        const modalDelay = hasCollision ? 1500 : 0;
         setTimeout(() => {
           // Check if player can use continue
           if (canUseContinue() && adManager.isRewardedReady()) {
@@ -299,12 +299,20 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const gesture = Gesture.Pan()
     .enabled(!isGameOver && !showContinueModal)
     .onBegin((e) => {
+      if (e.numberOfPointers > 1) {
+        runOnJS(handleFingerLift)();
+        return;
+      }
       playerX.value = e.x;
       playerY.value = e.y;
       runOnJS(updatePlayerPosition)(e.x, e.y);
       runOnJS(handleStart)();
     })
     .onUpdate((e) => {
+      if (e.numberOfPointers > 1) {
+        runOnJS(handleFingerLift)();
+        return;
+      }
       playerX.value = e.x;
       playerY.value = e.y;
       runOnJS(updatePlayerPosition)(e.x, e.y);
