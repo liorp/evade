@@ -412,16 +412,18 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         );
       })}
 
-      {/* Player */}
-      <Player
-        x={playerX}
-        y={playerY}
-        hasShield={activeEffects.shield.active}
-        shape={equipped.playerShape}
-        colorId={equipped.playerColor}
-        trail={equipped.playerTrail}
-        glow={equipped.playerGlow}
-      />
+      {/* Player - hide when exploding */}
+      {!explosion && (
+        <Player
+          x={playerX}
+          y={playerY}
+          hasShield={activeEffects.shield.active}
+          shape={equipped.playerShape}
+          colorId={equipped.playerColor}
+          trail={equipped.playerTrail}
+          glow={equipped.playerGlow}
+        />
+      )}
 
       {/* Explosion */}
       {explosion && (
