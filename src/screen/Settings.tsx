@@ -1,7 +1,7 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { trackSettingChanged } from '../analytics';
 import { COLORS } from '../const/colors';
@@ -129,7 +129,7 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={styles.content}>
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           {/* Audio Section */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('settings.audio')}</Text>
@@ -207,11 +207,10 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
             />
           </View>
 
-          {/* Reset Section */}
-          <View style={styles.resetButtonContainer}>
+          <View style={styles.purchaseButtonContainer}>
             <GlassButton title={t('settings.resetAll')} onPress={handleResetAll} variant="danger" />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -243,8 +242,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
     paddingHorizontal: 24,
     paddingTop: 32,
+    paddingBottom: 48,
   },
   sectionHeader: {
     marginBottom: 16,
@@ -316,10 +318,6 @@ const styles = StyleSheet.create({
   },
   purchaseButtonContainer: {
     marginTop: 16,
-    alignItems: 'center',
-  },
-  resetButtonContainer: {
-    marginTop: 48,
     alignItems: 'center',
   },
 });
