@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "97866365402",
+    "project_id": "evade-54dfc",
+    "storage_bucket": "evade-54dfc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:97866365402:android:d87f8d66bc990f678ca8e3",
+        "android_client_info": {
+          "package_name": "com.liorpolak.evade"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8nldc0UpTjfmt0Fav3PMCLxbETuu_Qtg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
