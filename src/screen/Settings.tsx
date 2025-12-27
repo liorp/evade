@@ -9,6 +9,7 @@ import { usePurchaseStore } from '../state/purchaseStore';
 import { useAdStore } from '../state/adStore';
 import { iapManager } from '../iap/iapManager';
 import { IAP_PRICES } from '../const/iap';
+import { trackSettingChanged } from '../analytics';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -49,6 +50,33 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
     }
   };
 
+  const handleMusicChange = (value: boolean) => {
+    trackSettingChanged({
+      setting: 'music_enabled',
+      old_value: String(musicEnabled),
+      new_value: String(value),
+    });
+    setMusicEnabled(value);
+  };
+
+  const handleSfxChange = (value: boolean) => {
+    trackSettingChanged({
+      setting: 'sfx_enabled',
+      old_value: String(sfxEnabled),
+      new_value: String(value),
+    });
+    setSfxEnabled(value);
+  };
+
+  const handleHandednessChange = (value: 'left' | 'right') => {
+    trackSettingChanged({
+      setting: 'handedness',
+      old_value: handedness,
+      new_value: value,
+    });
+    setHandedness(value);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -66,7 +94,7 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
           <Text style={styles.settingLabel}>{t('settings.backgroundMusic')}</Text>
           <Switch
             value={musicEnabled}
-            onValueChange={setMusicEnabled}
+            onValueChange={handleMusicChange}
             trackColor={{ false: '#333', true: COLORS.menuAccent }}
             thumbColor={musicEnabled ? COLORS.player : '#888'}
           />
@@ -75,7 +103,7 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
           <Text style={styles.settingLabel}>{t('settings.soundEffects')}</Text>
           <Switch
             value={sfxEnabled}
-            onValueChange={setSfxEnabled}
+            onValueChange={handleSfxChange}
             trackColor={{ false: '#333', true: COLORS.menuAccent }}
             thumbColor={sfxEnabled ? COLORS.player : '#888'}
           />
@@ -90,7 +118,7 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
               styles.segment,
               handedness === 'left' && styles.segmentActive,
             ]}
-            onPress={() => setHandedness('left')}
+            onPress={() => handleHandednessChange('left')}
           >
             <Text
               style={[
@@ -106,7 +134,7 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
               styles.segment,
               handedness === 'right' && styles.segmentActive,
             ]}
-            onPress={() => setHandedness('right')}
+            onPress={() => handleHandednessChange('right')}
           >
             <Text
               style={[

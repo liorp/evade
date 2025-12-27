@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -21,6 +21,12 @@ import { useCosmeticStore } from '../state/cosmeticStore';
 import { adManager } from '../ads/adManager';
 import { SHARD_PACKS } from '../const/iap';
 import { iapManager } from '../iap/iapManager';
+import {
+  trackShopOpened,
+  trackShopCategoryViewed,
+  trackItemPreviewed,
+  trackItemPurchased,
+} from '../analytics';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -48,10 +54,20 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
   const { balance, spendShards, canWatchRewardedAd, recordRewardedAd, addShards } = useShardStore();
   const { isOwned, purchaseItem, equipItem, equipped } = useCosmeticStore();
 
+  useEffect(() => {
+    trackShopOpened();
+  }, []);
+
   const items = getCosmeticItems(selectedCategory);
 
   const handlePurchase = (item: CosmeticItem) => {
     if (item.price === 0) return; // Free items don't need purchase
+
+    trackItemPreviewed({
+      item_id: item.id,
+      category: item.category,
+      price: item.price,
+    });
 
     if (balance < item.price) {
       Alert.alert(
@@ -77,6 +93,11 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
             if (spendShards(item.price)) {
               purchaseItem(item.category, item.id);
               equipItem(item.category, item.id);
+              trackItemPurchased({
+                item_id: item.id,
+                category: item.category,
+                price: item.price,
+              });
             }
           },
         },
@@ -93,7 +114,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
 
     const success = await adManager.showRewarded(() => {
       recordRewardedAd();
-    });
+    }, 'shards');
 
     if (!success) {
       Alert.alert(t('common.error', 'Error'), t('shop.adFailed', 'Ad not available'));
@@ -177,7 +198,10 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
           <Pressable
             key={cat.key}
             style={[styles.tab, selectedCategory === cat.key && styles.tabActive]}
-            onPress={() => setSelectedCategory(cat.key)}
+            onPress={() => {
+              setSelectedCategory(cat.key);
+              trackShopCategoryViewed({ category: cat.key });
+            }}
           >
             <Text
               style={[styles.tabText, selectedCategory === cat.key && styles.tabTextActive]}

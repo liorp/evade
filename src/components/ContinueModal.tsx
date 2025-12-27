@@ -51,7 +51,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
     setIsLoading(true);
     const success = await adManager.showRewarded(() => {
       onContinue();
-    });
+    }, 'continue');
     setIsLoading(false);
 
     if (!success) {

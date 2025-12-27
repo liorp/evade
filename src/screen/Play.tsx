@@ -1,4 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  trackGameStarted,
+  trackGameEnded,
+  trackContinueUsed,
+  trackBoosterCollected,
+} from '../analytics';
 import { StyleSheet, View, Text, Dimensions, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -69,6 +75,11 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const [dodgeFlashTrigger, setDodgeFlashTrigger] = useState(0);
   const [passedBest, setPassedBest] = useState(false);
   const [shardsEarned, setShardsEarned] = useState(0);
+  const [boostersCollectedCount, setBoostersCollectedCount] = useState(0);
+  const [didUseContinue, setDidUseContinue] = useState(false);
+  const gameStartTimeRef = useRef<number>(0);
+  const boostersCollectedRef = useRef(0);
+  const didUseContinueRef = useRef(false);
 
   const playerX = useSharedValue(screenSize.width / 2);
   const playerY = useSharedValue(screenSize.height / 2);
@@ -97,6 +108,10 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       } else if (event === 'stateChange') {
         const state = engine.getState();
         setHasStarted(state.hasStarted);
+      } else if (event === 'boosterCollected') {
+        setBoostersCollectedCount((prev) => prev + 1);
+        boostersCollectedRef.current += 1;
+        trackBoosterCollected({ booster_type: data as 'shield' | 'multiplier' | 'plus' });
       } else if (event === 'closeDodge') {
         setDodgeFlashTrigger((prev) => prev + 1);
         if (sfxEnabled) {
@@ -160,8 +175,19 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   }, [score, bestScore, passedBest]);
 
   const handleStart = useCallback(() => {
+    // Only track and reset stats if game hasn't started yet
+    if (!gameEngine.current?.getState().hasStarted) {
+      trackGameStarted({
+        cosmetics: JSON.stringify(equipped),
+      });
+      gameStartTimeRef.current = Date.now();
+      setBoostersCollectedCount(0);
+      setDidUseContinue(false);
+      boostersCollectedRef.current = 0;
+      didUseContinueRef.current = false;
+    }
     gameEngine.current?.resume();
-  }, []);
+  }, [equipped]);
 
   const handleFingerLift = useCallback(() => {
     // Only trigger game over if game has started
@@ -181,6 +207,14 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       addScore(finalScore);
     }
 
+    // Track game ended
+    trackGameEnded({
+      score: finalScore,
+      duration_seconds: Math.floor((Date.now() - gameStartTimeRef.current) / 1000),
+      boosters_collected: boostersCollectedRef.current,
+      continue_used: didUseContinueRef.current,
+    });
+
     // Award shards based on score
     const shards = calculateShardsFromScore(finalScore);
     setShardsEarned(shards);
@@ -194,7 +228,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
 
     // Show interstitial if needed
     if (shouldShowInterstitial()) {
-      await adManager.showInterstitial();
+      await adManager.showInterstitial('game_over');
       markAdShown();
     }
   }, [addScore, addShards, sfxEnabled, shouldShowInterstitial, markAdShown]);
@@ -202,6 +236,13 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const handleContinue = useCallback(() => {
     setShowContinueModal(false);
     setPendingGameOver(false);
+    setDidUseContinue(true);
+    didUseContinueRef.current = true;
+    const currentScore = gameEngine.current?.getState().score ?? 0;
+    trackContinueUsed({
+      method: 'rewarded_ad',
+      score_at_continue: currentScore,
+    });
     markContinueUsed();
     markRewardedWatched();
     gameEngine.current?.continueGame(AD_CONFIG.CONTINUE_SHIELD_DURATION);
@@ -245,6 +286,10 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     setDodgeFlashTrigger(0);
     setPassedBest(false);
     setShardsEarned(0);
+    setBoostersCollectedCount(0);
+    setDidUseContinue(false);
+    boostersCollectedRef.current = 0;
+    didUseContinueRef.current = false;
     newEnemyIds.current.clear();
     newBoosterIds.current.clear();
     playerX.value = screenSize.width / 2;
