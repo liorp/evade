@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BackgroundTheme, BACKGROUND_THEMES } from '../const/cosmetics';
-import { PerspectiveGrid } from '../components/ui';
 
 interface GameBackgroundProps {
   theme?: BackgroundTheme;
@@ -14,11 +13,6 @@ export const GameBackground: React.FC<GameBackgroundProps> = ({ theme = 'dark' }
     <View style={[styles.container, { backgroundColor: themeData.colors.bg }]}>
       {/* Subtle gradient overlay for depth */}
       <View style={[styles.gradient, { backgroundColor: themeData.colors.accent }]} />
-
-      {/* Theme-specific decorations */}
-      {theme === 'synthwave' && (
-        <PerspectiveGrid opacity={0.15} animated={false} />
-      )}
 
       {theme === 'ocean' && (
         <View style={styles.oceanWave} />

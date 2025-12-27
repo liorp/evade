@@ -257,6 +257,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   }, [handleActualGameOver]);
 
   const gesture = Gesture.Pan()
+    .enabled(!isGameOver && !showContinueModal)
     .onBegin((e) => {
       playerX.value = e.x;
       playerY.value = e.y;
