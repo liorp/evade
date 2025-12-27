@@ -17,6 +17,7 @@ export default {
     highScores: 'High Scores',
     howToPlay: 'How to Play',
     settings: 'Settings',
+    shop: 'Shop',
   },
 
   // Play Screen
@@ -93,5 +94,24 @@ export default {
     tip4: 'Faster enemies give more points',
     startPlaying: 'START PLAYING',
     gotIt: 'GOT IT',
+  },
+
+  // Shop Screen
+  shop: {
+    title: 'Shop',
+    equipped: 'Equipped',
+    owned: 'Owned',
+    free: 'Free',
+    buy: 'Buy',
+    insufficientShards: 'Not Enough Shards',
+    needMoreShards: 'You need {{amount}} more shards.',
+    confirmPurchase: 'Confirm Purchase',
+    purchaseMessage: 'Buy {{name}} for {{price}} shards?',
+    earnShards: 'Earn Shards',
+    watchAd: 'Watch Ad (+10 💎)',
+    adsRemaining: '{{count}} ads remaining today',
+    noAdsLeft: 'Come back tomorrow for more!',
+    buyShards: 'Buy Shards',
+    adFailed: 'Ad not available. Please try again later.',
   },
 };
