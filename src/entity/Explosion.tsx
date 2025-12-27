@@ -1,12 +1,11 @@
 import type React from 'react';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
-  runOnJS,
-  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -14,29 +13,48 @@ interface ExplosionProps {
   x: number;
   y: number;
   color: string;
-  onComplete: () => void;
 }
 
-const PARTICLE_COUNT = 12;
-const ANIMATION_DURATION = 800;
-const PARTICLE_SIZE = 10;
-const EXPLOSION_RADIUS = 100;
+const PARTICLE_COUNT = 20;
+const ANIMATION_DURATION = 3000;
+
+interface ParticleData {
+  angle: number;
+  size: number;
+  distance: number;
+  delay: number;
+  duration: number;
+}
 
 interface ParticleProps {
-  angle: number;
+  data: ParticleData;
   color: string;
-  progress: SharedValue<number>;
 }
 
-const Particle: React.FC<ParticleProps> = ({ angle, color, progress }) => {
+const Particle: React.FC<ParticleProps> = ({ data, color }) => {
+  const progress = useSharedValue(0);
+
+  // Start animation on mount with individual delay
+  progress.value = withDelay(
+    data.delay,
+    withTiming(1, {
+      duration: data.duration,
+      easing: Easing.out(Easing.quad),
+    }),
+  );
+
   const animatedStyle = useAnimatedStyle(() => {
-    const distance = progress.value * EXPLOSION_RADIUS;
-    const translateX = Math.cos(angle) * distance;
-    const translateY = Math.sin(angle) * distance;
-    const scale = 1 - progress.value * 0.5;
+    const distance = progress.value * data.distance;
+    const translateX = Math.cos(data.angle) * distance;
+    const translateY = Math.sin(data.angle) * distance;
+    // Particles shrink as they fly out
+    const scale = 1 - progress.value * 0.7;
     const opacity = 1 - progress.value;
 
     return {
+      width: data.size,
+      height: data.size,
+      borderRadius: data.size / 2,
       transform: [{ translateX }, { translateY }, { scale }],
       opacity,
     };
@@ -45,35 +63,29 @@ const Particle: React.FC<ParticleProps> = ({ angle, color, progress }) => {
   return <Animated.View style={[styles.particle, { backgroundColor: color }, animatedStyle]} />;
 };
 
-export const Explosion: React.FC<ExplosionProps> = ({ x, y, color, onComplete }) => {
-  const progress = useSharedValue(0);
+export const Explosion: React.FC<ExplosionProps> = ({ x, y, color }) => {
+  // Generate asymmetric particle data once
+  const particles = useMemo<ParticleData[]>(() => {
+    return Array.from({ length: PARTICLE_COUNT }, () => {
+      // Random angle (full 360 degrees)
+      const angle = Math.random() * Math.PI * 2;
+      // Varied sizes (small pieces of the player)
+      const size = 4 + Math.random() * 12;
+      // Varied distances
+      const distance = 60 + Math.random() * 120;
+      // Staggered start times for more organic feel
+      const delay = Math.random() * 100;
+      // Varied durations
+      const duration = ANIMATION_DURATION * (0.6 + Math.random() * 0.4);
 
-  // Generate random angles for particles
-  const angles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-    const baseAngle = (i / PARTICLE_COUNT) * Math.PI * 2;
-    const randomOffset = (Math.random() - 0.5) * 0.5;
-    return baseAngle + randomOffset;
-  });
-
-  useEffect(() => {
-    progress.value = withTiming(
-      1,
-      {
-        duration: ANIMATION_DURATION,
-        easing: Easing.out(Easing.cubic),
-      },
-      (finished) => {
-        if (finished) {
-          runOnJS(onComplete)();
-        }
-      },
-    );
-  }, [progress, onComplete]);
+      return { angle, size, distance, delay, duration };
+    });
+  }, []);
 
   return (
     <View style={[styles.container, { left: x, top: y }]}>
-      {angles.map((angle, index) => (
-        <Particle key={index} angle={angle} color={color} progress={progress} />
+      {particles.map((data, index) => (
+        <Particle key={index} data={data} color={color} />
       ))}
     </View>
   );
@@ -90,8 +102,5 @@ const styles = StyleSheet.create({
   },
   particle: {
     position: 'absolute',
-    width: PARTICLE_SIZE,
-    height: PARTICLE_SIZE,
-    borderRadius: PARTICLE_SIZE / 2,
   },
 });

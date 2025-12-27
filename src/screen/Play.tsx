@@ -17,7 +17,7 @@ import {
 } from '../analytics';
 import { audioManager } from '../audio/audioManager';
 import { COLORS } from '../const/colors';
-import { ENEMY_THEMES } from '../cosmetics/constants';
+import { PLAYER_COLORS } from '../cosmetics/constants';
 import { Booster } from '../entity/Booster';
 import { Enemy } from '../entity/Enemy';
 import { Explosion } from '../entity/Explosion';
@@ -141,21 +141,25 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         }
 
-        // Show explosion if collision data exists (not finger lift)
-        const { collisionPosition } = gameOverData;
-        const hasCollision = collisionPosition && gameOverData.enemySpeedTier;
-        if (collisionPosition && hasCollision) {
-          const themeData = ENEMY_THEMES[equipped.enemyTheme];
+        // Show player explosion if collision (not finger lift)
+        const hasCollision = gameOverData.collisionPosition != null;
+        if (hasCollision) {
+          // Play explosion sound
+          if (sfxEnabled) {
+            audioManager.playExplosion();
+          }
+          // Explode the player at their current position with their color
+          const playerColorData = PLAYER_COLORS[equipped.playerColor];
           setExplosion({
             id: Date.now().toString(),
-            x: collisionPosition.x,
-            y: collisionPosition.y,
-            color: themeData.colors.base,
+            x: playerX.value,
+            y: playerY.value,
+            color: playerColorData.hex,
           });
         }
 
-        // Delay before showing modals to let explosion animation play
-        const modalDelay = hasCollision ? 1500 : 0;
+        // Delay before showing modals to let explosion animation play (3 seconds)
+        const modalDelay = hasCollision ? 3000 : 0;
         setTimeout(() => {
           // Check if player can use continue
           if (canUseContinue() && adManager.isRewardedReady()) {
@@ -221,11 +225,13 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     boosters.find,
     canUseContinue,
     enemies.find,
-    equipped.enemyTheme,
+    equipped.playerColor,
     handedness,
     handleActualGameOver,
     hapticsEnabled,
     incrementDeathCount,
+    playerX,
+    playerY,
     screenSize.height,
     screenSize.width,
     sfxEnabled,
@@ -419,13 +425,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
 
       {/* Explosion */}
       {explosion && (
-        <Explosion
-          key={explosion.id}
-          x={explosion.x}
-          y={explosion.y}
-          color={explosion.color}
-          onComplete={() => setExplosion(null)}
-        />
+        <Explosion key={explosion.id} x={explosion.x} y={explosion.y} color={explosion.color} />
       )}
     </Animated.View>
   );

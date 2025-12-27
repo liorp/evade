@@ -3,7 +3,7 @@ import { Audio } from 'expo-av';
 class AudioManager {
   private backgroundMusic: Audio.Sound | null = null;
   private gameOverSound: Audio.Sound | null = null;
-  private dodgeSound: Audio.Sound | null = null;
+  private explosionSound: Audio.Sound | null = null;
   private musicEnabled = true;
   private sfxEnabled = true;
   private isLoaded = false;
@@ -31,12 +31,12 @@ class AudioManager {
       );
       this.gameOverSound = gameOver;
 
-      // Load dodge sound
-      const { sound: dodge } = await Audio.Sound.createAsync(
-        require('../../assets/audio/dodge.mp3'),
-        { volume: 0.5 },
+      // Load explosion sound
+      const { sound: explosion } = await Audio.Sound.createAsync(
+        require('../../assets/audio/explosion.mp3'),
+        { volume: 0.8 },
       );
-      this.dodgeSound = dodge;
+      this.explosionSound = explosion;
 
       this.isLoaded = true;
     } catch (error) {
@@ -73,13 +73,13 @@ class AudioManager {
     }
   }
 
-  async playDodge(): Promise<void> {
-    if (!this.sfxEnabled || !this.dodgeSound) return;
+  async playExplosion(): Promise<void> {
+    if (!this.sfxEnabled || !this.explosionSound) return;
     try {
-      await this.dodgeSound.setPositionAsync(0);
-      await this.dodgeSound.playAsync();
+      await this.explosionSound.setPositionAsync(0);
+      await this.explosionSound.playAsync();
     } catch (error) {
-      console.warn('Dodge sound failed:', error);
+      console.warn('Explosion sound failed:', error);
     }
   }
 
@@ -104,9 +104,9 @@ class AudioManager {
         await this.gameOverSound.unloadAsync();
         this.gameOverSound = null;
       }
-      if (this.dodgeSound) {
-        await this.dodgeSound.unloadAsync();
-        this.dodgeSound = null;
+      if (this.explosionSound) {
+        await this.explosionSound.unloadAsync();
+        this.explosionSound = null;
       }
       this.isLoaded = false;
     } catch (error) {
