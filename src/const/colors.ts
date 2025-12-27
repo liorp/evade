@@ -1,5 +1,5 @@
 export const COLORS = {
-  background: '#0a0a0f',
+  background: '#1a1a1e',
   player: '#00ffaa',
   playerGlow: 'rgba(0, 255, 170, 0.4)',
   enemy: '#ff3366',

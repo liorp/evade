@@ -254,7 +254,10 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
 
   const handleBackToMenu = () => {
     gameEngine.current?.stop();
-    navigation.navigate('MainMenu');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainMenu' }],
+    });
   };
 
   return (

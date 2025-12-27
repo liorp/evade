@@ -1,14 +1,25 @@
-import {
+import { isExpoGo } from '../utils/environment';
+import { AD_UNIT_IDS } from '../const/ads';
+
+// Conditionally import real or mock ads
+const {
   InterstitialAd,
   RewardedAd,
   AdEventType,
   RewardedAdEventType,
-} from 'react-native-google-mobile-ads';
-import { AD_UNIT_IDS } from '../const/ads';
+} = isExpoGo
+  ? require('../mocks/googleMobileAds')
+  : require('react-native-google-mobile-ads');
+
+interface AdInstance {
+  addAdEventListener: (event: string, callback: (arg?: unknown) => void) => () => void;
+  load: () => void;
+  show: () => Promise<void>;
+}
 
 class AdManager {
-  private interstitial: InterstitialAd | null = null;
-  private rewarded: RewardedAd | null = null;
+  private interstitial: AdInstance | null = null;
+  private rewarded: AdInstance | null = null;
   private isInterstitialLoaded = false;
   private isRewardedLoaded = false;
   private interstitialUnsubscribers: (() => void)[] = [];
@@ -32,61 +43,63 @@ class AdManager {
   private loadInterstitial(): void {
     this.cleanupInterstitial();
 
-    this.interstitial = InterstitialAd.createForAdRequest(AD_UNIT_IDS.interstitial, {
+    const interstitial: AdInstance = InterstitialAd.createForAdRequest(AD_UNIT_IDS.interstitial, {
       requestNonPersonalizedAdsOnly: true,
     });
+    this.interstitial = interstitial;
 
     this.interstitialUnsubscribers.push(
-      this.interstitial.addAdEventListener(AdEventType.LOADED, () => {
+      interstitial.addAdEventListener(AdEventType.LOADED, () => {
         this.isInterstitialLoaded = true;
       })
     );
 
     this.interstitialUnsubscribers.push(
-      this.interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+      interstitial.addAdEventListener(AdEventType.CLOSED, () => {
         this.isInterstitialLoaded = false;
         this.loadInterstitial(); // Preload next ad
       })
     );
 
     this.interstitialUnsubscribers.push(
-      this.interstitial.addAdEventListener(AdEventType.ERROR, (error) => {
+      interstitial.addAdEventListener(AdEventType.ERROR, (error: unknown) => {
         console.warn('Interstitial ad error:', error);
         this.isInterstitialLoaded = false;
       })
     );
 
-    this.interstitial.load();
+    interstitial.load();
   }
 
   private loadRewarded(): void {
     this.cleanupRewarded();
 
-    this.rewarded = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded, {
+    const rewarded: AdInstance = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded, {
       requestNonPersonalizedAdsOnly: true,
     });
+    this.rewarded = rewarded;
 
     this.rewardedUnsubscribers.push(
-      this.rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+      rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
         this.isRewardedLoaded = true;
       })
     );
 
     this.rewardedUnsubscribers.push(
-      this.rewarded.addAdEventListener(AdEventType.CLOSED, () => {
+      rewarded.addAdEventListener(AdEventType.CLOSED, () => {
         this.isRewardedLoaded = false;
         this.loadRewarded(); // Preload next ad
       })
     );
 
     this.rewardedUnsubscribers.push(
-      this.rewarded.addAdEventListener(AdEventType.ERROR, (error) => {
+      rewarded.addAdEventListener(AdEventType.ERROR, (error: unknown) => {
         console.warn('Rewarded ad error:', error);
         this.isRewardedLoaded = false;
       })
     );
 
-    this.rewarded.load();
+    rewarded.load();
   }
 
   async showInterstitial(): Promise<boolean> {
@@ -119,7 +132,7 @@ class AdManager {
 
       this.rewarded!.show().then(() => {
         resolve(true);
-      }).catch((error) => {
+      }).catch((error: unknown) => {
         console.warn('Failed to show rewarded:', error);
         unsubscribe();
         resolve(false);

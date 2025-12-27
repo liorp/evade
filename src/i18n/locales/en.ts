@@ -69,7 +69,7 @@ export default {
     title: 'HOW TO PLAY',
     goal: 'GOAL',
     goalText:
-      'Survive as long as possible by evading enemies. Your score increases when enemies despawn.',
+      'Survive as long as possible by evading enemies.',
     controlsTitle: 'CONTROLS',
     controlsText:
       'Touch and drag to move your player (green dot). Keep your finger on the screen - lifting it ends the game!',

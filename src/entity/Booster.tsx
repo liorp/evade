@@ -80,10 +80,7 @@ export const Booster: React.FC<BoosterProps> = ({ x, y, type, ttlPercent, isNew 
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
-      <View style={styles.octagon}>
-        <View style={[styles.octagonBody, { backgroundColor: BOOSTER_COLOR }]} />
-        <View style={[styles.octagonTop, { borderBottomColor: BOOSTER_COLOR }]} />
-        <View style={[styles.octagonBottom, { borderTopColor: BOOSTER_COLOR }]} />
+      <View style={styles.boosterShape}>
         <View style={styles.iconContainer}>
           {renderIcon()}
         </View>
@@ -93,7 +90,6 @@ export const Booster: React.FC<BoosterProps> = ({ x, y, type, ttlPercent, isNew 
 };
 
 const size = GAME.BOOSTER_RADIUS * 2;
-const cornerCut = size * 0.29; // Amount to cut from each corner
 
 const styles = StyleSheet.create({
   container: {
@@ -103,39 +99,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  octagon: {
+  boosterShape: {
     width: size,
     height: size,
+    backgroundColor: BOOSTER_COLOR,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  octagonBody: {
-    position: 'absolute',
-    width: size,
-    height: size - cornerCut * 2,
-    top: cornerCut,
-  },
-  octagonTop: {
-    position: 'absolute',
-    top: 0,
-    width: size - cornerCut * 2, // Flat top edge
-    height: 0,
-    borderLeftWidth: cornerCut,
-    borderRightWidth: cornerCut,
-    borderBottomWidth: cornerCut,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-  },
-  octagonBottom: {
-    position: 'absolute',
-    bottom: 0,
-    width: size - cornerCut * 2, // Flat bottom edge
-    height: 0,
-    borderLeftWidth: cornerCut,
-    borderRightWidth: cornerCut,
-    borderTopWidth: cornerCut,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
   },
   iconContainer: {
     position: 'absolute',

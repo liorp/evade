@@ -1,10 +1,16 @@
-import * as ExpoIAP from 'expo-iap';
 import { Platform } from 'react-native';
+import { isExpoGo } from '../utils/environment';
 import { IAP_PRODUCTS } from '../const/iap';
+import type { ProductOrSubscription, RequestPurchasePropsByPlatforms, Purchase } from '../mocks/expoIap';
+
+// Conditionally import real or mock IAP
+const ExpoIAP = isExpoGo
+  ? require('../mocks/expoIap')
+  : require('expo-iap');
 
 class IAPManager {
   private isInitialized = false;
-  private products: ExpoIAP.ProductOrSubscription[] = [];
+  private products: ProductOrSubscription[] = [];
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
@@ -47,7 +53,7 @@ class IAPManager {
         ios: { sku },
         android: { skus: [sku] },
         default: { sku },
-      }) as ExpoIAP.RequestPurchasePropsByPlatforms;
+      }) as RequestPurchasePropsByPlatforms;
       await ExpoIAP.requestPurchase({ request, type: 'in-app' });
       return true;
     } catch (error) {
@@ -66,7 +72,7 @@ class IAPManager {
         ios: { sku: productId },
         android: { skus: [productId] },
         default: { sku: productId },
-      }) as ExpoIAP.RequestPurchasePropsByPlatforms;
+      }) as RequestPurchasePropsByPlatforms;
       await ExpoIAP.requestPurchase({ request, type: 'in-app' });
       return true;
     } catch (error) {
@@ -83,7 +89,7 @@ class IAPManager {
     try {
       const purchases = await ExpoIAP.getAvailablePurchases();
       const sku = IAP_PRODUCTS.REMOVE_ADS as string;
-      const hasRemoveAds = purchases.some((p) => p.id === sku);
+      const hasRemoveAds = purchases.some((p: Purchase) => p.id === sku);
       return hasRemoveAds;
     } catch (error) {
       console.warn('Restore failed:', error);
