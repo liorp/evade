@@ -43,6 +43,10 @@ export default {
     left: 'Left',
     right: 'Right',
     handednessHelp: "Enemies won't spawn where your palm blocks the screen",
+    purchases: 'Purchases',
+    removeAds: 'Remove Ads',
+    adsRemoved: 'Ads Removed',
+    restorePurchases: 'Restore Purchases',
   },
 
   // High Scores Screen
