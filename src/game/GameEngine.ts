@@ -119,6 +119,33 @@ export class GameEngine {
     this.emit('gameOver', { score: this.state.score });
   }
 
+  continueGame(shieldDuration: number): void {
+    if (!this.state.isGameOver) return;
+
+    // Reset game over state
+    this.state.isGameOver = false;
+    this.state.isRunning = true;
+    this.state.isPaused = true; // Wait for touch to resume
+
+    // Activate shield
+    const now = performance.now();
+    this.state.activeEffects.shield.active = true;
+    this.state.activeEffects.shield.endTime = now + shieldDuration;
+
+    // Clear nearby enemies for safety
+    this.state.enemies = this.state.enemies.filter(
+      (enemy) =>
+        Math.hypot(
+          enemy.position.x - this.state.playerPosition.x,
+          enemy.position.y - this.state.playerPosition.y
+        ) > GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS + 100
+    );
+
+    this.lastTimestamp = now;
+    this.emit('stateChange');
+    this.loop(now);
+  }
+
   private loop = (timestamp: number): void => {
     if (!this.state.isRunning) return;
 
