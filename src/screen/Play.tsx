@@ -23,6 +23,9 @@ import { ContinueModal } from '../components/ContinueModal';
 import { useAdStore } from '../state/adStore';
 import { adManager } from '../ads/adManager';
 import { AD_CONFIG } from '../const/ads';
+import { useCosmeticStore } from '../state/cosmeticStore';
+import { useShardStore, calculateShardsFromScore } from '../state/shardStore';
+import { GameBackground } from '../entity/GameBackground';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -47,6 +50,8 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     shouldShowInterstitial,
     canUseContinue,
   } = useAdStore();
+  const { equipped } = useCosmeticStore();
+  const { addShards } = useShardStore();
   const bestScore = getBestScore();
   const [score, setScore] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
@@ -63,6 +68,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const [currentTime, setCurrentTime] = useState(performance.now());
   const [dodgeFlashTrigger, setDodgeFlashTrigger] = useState(0);
   const [passedBest, setPassedBest] = useState(false);
+  const [shardsEarned, setShardsEarned] = useState(0);
 
   const playerX = useSharedValue(screenSize.width / 2);
   const playerY = useSharedValue(screenSize.height / 2);
@@ -174,6 +180,14 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     if (finalScore > 0) {
       addScore(finalScore);
     }
+
+    // Award shards based on score
+    const shards = calculateShardsFromScore(finalScore);
+    setShardsEarned(shards);
+    if (shards > 0) {
+      addShards(shards, 'score');
+    }
+
     if (sfxEnabled) {
       audioManager.playGameOver();
     }
@@ -183,7 +197,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       await adManager.showInterstitial();
       markAdShown();
     }
-  }, [addScore, sfxEnabled, shouldShowInterstitial, markAdShown]);
+  }, [addScore, addShards, sfxEnabled, shouldShowInterstitial, markAdShown]);
 
   const handleContinue = useCallback(() => {
     setShowContinueModal(false);
@@ -230,6 +244,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     });
     setDodgeFlashTrigger(0);
     setPassedBest(false);
+    setShardsEarned(0);
     newEnemyIds.current.clear();
     newBoosterIds.current.clear();
     playerX.value = screenSize.width / 2;
@@ -246,6 +261,9 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     <GestureHandlerRootView style={styles.container}>
       <GestureDetector gesture={gesture}>
         <Animated.View style={styles.gameArea}>
+          {/* Themed Background */}
+          <GameBackground theme={equipped.backgroundTheme} />
+
           {/* Score and Active Effects */}
           <SafeAreaView style={styles.scoreContainer}>
             <Text style={styles.score}>{score}</Text>
@@ -296,6 +314,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
                 speedTier={enemy.speedTier}
                 ttlPercent={ttlPercent}
                 isNew={newEnemyIds.current.has(enemy.id)}
+                theme={equipped.enemyTheme}
               />
             );
           })}
@@ -306,6 +325,10 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
             y={playerY}
             hasShield={activeEffects.shield.active}
             dodgeFlashTrigger={dodgeFlashTrigger}
+            shape={equipped.playerShape}
+            colorId={equipped.playerColor}
+            trail={equipped.playerTrail}
+            glow={equipped.playerGlow}
           />
         </Animated.View>
       </GestureDetector>
@@ -333,6 +356,9 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
               <Text style={styles.newBestText}>NEW BEST!</Text>
             )}
             <Text style={styles.finalScore}>{score}</Text>
+            {shardsEarned > 0 && (
+              <Text style={styles.shardsEarned}>+{shardsEarned} 💎</Text>
+            )}
             <Pressable style={styles.button} onPress={handleRetry}>
               <Text style={styles.buttonText}>{t('common.retry')}</Text>
             </Pressable>
@@ -440,7 +466,13 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: 'bold',
     color: COLORS.player,
-    marginBottom: 24,
+    marginBottom: 8,
+  },
+  shardsEarned: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    marginBottom: 16,
   },
   button: {
     backgroundColor: COLORS.menuAccent,
