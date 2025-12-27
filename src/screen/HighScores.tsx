@@ -1,10 +1,11 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
 import { useHighscoreStore } from '../state/highscoreStore';
+import { SynthwaveBackground, ChromeText, GlassButton } from '../components/ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -28,6 +29,37 @@ const formatDate = (isoString: string): string => {
   });
 };
 
+const MEDAL_EMOJIS = ['', '🥇', '🥈', '🥉'];
+
+const getRankStyle = (rank: number) => {
+  switch (rank) {
+    case 1:
+      return {
+        backgroundColor: 'rgba(255, 215, 0, 0.15)',
+        borderColor: COLORS.chromeGold,
+        rankColor: COLORS.chromeGold,
+      };
+    case 2:
+      return {
+        backgroundColor: 'rgba(192, 192, 192, 0.1)',
+        borderColor: '#c0c0c0',
+        rankColor: '#c0c0c0',
+      };
+    case 3:
+      return {
+        backgroundColor: 'rgba(205, 127, 50, 0.1)',
+        borderColor: '#cd7f32',
+        rankColor: '#cd7f32',
+      };
+    default:
+      return {
+        backgroundColor: rank % 2 === 0 ? 'rgba(157, 78, 221, 0.05)' : 'transparent',
+        borderColor: COLORS.neonPurple,
+        rankColor: COLORS.textMuted,
+      };
+  }
+};
+
 export const HighScoresScreen: React.FC<HighScoresProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { scores, clearScores } = useHighscoreStore();
@@ -40,59 +72,111 @@ export const HighScoresScreen: React.FC<HighScoresProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>{t('common.back')}</Text>
-        </Pressable>
-        <Text style={styles.title}>{t('highScores.title')}</Text>
-        <View style={styles.backButton} />
-      </View>
-
-      <View style={styles.content}>
-        {scores.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>{t('highScores.noScoresYet')}</Text>
-            <Text style={styles.emptySubtext}>{t('highScores.playToSetScore')}</Text>
-          </View>
-        ) : (
-          <>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.headerText, styles.rankColumn]}>{t('highScores.rank')}</Text>
-              <Text style={[styles.headerText, styles.scoreColumn]}>{t('highScores.score')}</Text>
-              <Text style={[styles.headerText, styles.dateColumn]}>{t('highScores.date')}</Text>
-            </View>
-            <ScrollView style={styles.scoreList} showsVerticalScrollIndicator={false}>
-              {scores.map((entry, index) => (
-                <View key={`${entry.date}-${index}`} style={styles.scoreRow}>
-                  <Text style={[styles.rankText, styles.rankColumn]}>{index + 1}</Text>
-                  <Text style={[styles.scoreText, styles.scoreColumn]}>{entry.score}</Text>
-                  <Text style={[styles.dateText, styles.dateColumn]}>{formatDate(entry.date)}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </>
-        )}
-      </View>
-
-      {scores.length > 0 && (
-        <View style={styles.footer}>
-          <Pressable
-            style={({ pressed }) => [styles.clearButton, pressed && styles.buttonPressed]}
-            onPress={handleClearScores}
-          >
-            <Text style={styles.clearButtonText}>{t('highScores.clearAllScores')}</Text>
-          </Pressable>
+    <View style={styles.container}>
+      <SynthwaveBackground
+        showStars
+        showGrid
+        showSun
+        showHalos={false}
+        sunPosition={0.35}
+        gridOpacity={0.4}
+      />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <GlassButton
+            title={t('common.back')}
+            onPress={() => navigation.goBack()}
+            variant="secondary"
+            style={styles.backButton}
+          />
+          <ChromeText size={28} color="gold">
+            {t('highScores.title')}
+          </ChromeText>
+          <View style={styles.headerSpacer} />
         </View>
-      )}
-    </SafeAreaView>
+
+        <View style={styles.content}>
+          {scores.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>{t('highScores.noScoresYet')}</Text>
+              <Text style={styles.emptySubtext}>{t('highScores.playToSetScore')}</Text>
+            </View>
+          ) : (
+            <>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.headerText, styles.rankColumn]}>{t('highScores.rank')}</Text>
+                <Text style={[styles.headerText, styles.scoreColumn]}>{t('highScores.score')}</Text>
+                <Text style={[styles.headerText, styles.dateColumn]}>{t('highScores.date')}</Text>
+              </View>
+              <ScrollView style={styles.scoreList} showsVerticalScrollIndicator={false}>
+                {scores.map((entry, index) => {
+                  const rank = index + 1;
+                  const rankStyle = getRankStyle(rank);
+                  const medal = rank <= 3 ? MEDAL_EMOJIS[rank] : '';
+
+                  return (
+                    <View
+                      key={`${entry.date}-${index}`}
+                      style={[
+                        styles.scoreRow,
+                        {
+                          backgroundColor: rankStyle.backgroundColor,
+                          borderBottomColor: rankStyle.borderColor,
+                        },
+                        rank === 1 && styles.firstPlaceRow,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.rankText,
+                          styles.rankColumn,
+                          { color: rankStyle.rankColor },
+                          rank === 1 && styles.firstPlaceRank,
+                        ]}
+                      >
+                        {medal} {rank}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.scoreText,
+                          styles.scoreColumn,
+                          rank === 1 && styles.firstPlaceScore,
+                        ]}
+                      >
+                        {entry.score}
+                      </Text>
+                      <Text style={[styles.dateText, styles.dateColumn]}>
+                        {formatDate(entry.date)}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </>
+          )}
+        </View>
+
+        {scores.length > 0 && (
+          <View style={styles.footer}>
+            <GlassButton
+              title={t('highScores.clearAllScores')}
+              onPress={handleClearScores}
+              variant="danger"
+            />
+          </View>
+        )}
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundDeep,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -102,16 +186,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButton: {
-    width: 80,
+    minWidth: 100,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  backText: {
-    fontSize: 16,
-    color: COLORS.menuAccent,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text,
+  headerSpacer: {
+    width: 100,
   },
   content: {
     flex: 1,
@@ -126,7 +206,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: COLORS.textPrimary,
     marginBottom: 8,
   },
   emptySubtext: {
@@ -137,13 +217,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: COLORS.neonPurple,
     marginBottom: 8,
   },
   headerText: {
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.textMuted,
+    color: COLORS.neonPurple,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -153,11 +233,20 @@ const styles = StyleSheet.create({
   scoreRow: {
     flexDirection: 'row',
     paddingVertical: 14,
+    paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a2e',
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  firstPlaceRow: {
+    shadowColor: COLORS.chromeGold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   rankColumn: {
-    width: 40,
+    width: 60,
   },
   scoreColumn: {
     flex: 1,
@@ -168,12 +257,22 @@ const styles = StyleSheet.create({
   },
   rankText: {
     fontSize: 16,
-    color: COLORS.textMuted,
+    fontWeight: '600',
+  },
+  firstPlaceRank: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   scoreText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.player,
+    color: COLORS.chromeGold,
+  },
+  firstPlaceScore: {
+    fontSize: 22,
+    textShadowColor: 'rgba(255, 215, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   dateText: {
     fontSize: 14,
@@ -182,22 +281,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 24,
     paddingVertical: 16,
-  },
-  clearButton: {
-    backgroundColor: '#331111',
-    paddingVertical: 14,
-    borderRadius: 8,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ff3366',
-  },
-  buttonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  clearButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ff3366',
   },
 });
