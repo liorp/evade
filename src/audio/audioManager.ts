@@ -20,21 +20,21 @@ class AudioManager {
       // Load background music
       const { sound: music } = await Audio.Sound.createAsync(
         require('../../assets/audio/background.mp3'),
-        { isLooping: true, volume: 0.5 }
+        { isLooping: true, volume: 0.5 },
       );
       this.backgroundMusic = music;
 
       // Load game over sound
       const { sound: gameOver } = await Audio.Sound.createAsync(
         require('../../assets/audio/gameover.mp3'),
-        { volume: 0.7 }
+        { volume: 0.7 },
       );
       this.gameOverSound = gameOver;
 
       // Load dodge sound
       const { sound: dodge } = await Audio.Sound.createAsync(
         require('../../assets/audio/dodge.mp3'),
-        { volume: 0.5 }
+        { volume: 0.5 },
       );
       this.dodgeSound = dodge;
 

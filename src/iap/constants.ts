@@ -32,6 +32,16 @@ export const IAP_PRICES = {
 
 export const SHARD_PACKS = [
   { productId: IAP_PRODUCTS.SHARDS_100, shards: 100, price: IAP_PRICES.SHARDS_100 },
-  { productId: IAP_PRODUCTS.SHARDS_500, shards: 500, price: IAP_PRICES.SHARDS_500, bonus: '20% bonus' },
-  { productId: IAP_PRODUCTS.SHARDS_1500, shards: 1500, price: IAP_PRICES.SHARDS_1500, bonus: '50% bonus' },
+  {
+    productId: IAP_PRODUCTS.SHARDS_500,
+    shards: 500,
+    price: IAP_PRICES.SHARDS_500,
+    bonus: '20% bonus',
+  },
+  {
+    productId: IAP_PRODUCTS.SHARDS_1500,
+    shards: 1500,
+    price: IAP_PRICES.SHARDS_1500,
+    bonus: '50% bonus',
+  },
 ] as const;

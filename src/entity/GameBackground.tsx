@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { BackgroundTheme, BACKGROUND_THEMES } from '../cosmetics/constants';
+import { BACKGROUND_THEMES, type BackgroundTheme } from '../cosmetics/constants';
 
 interface GameBackgroundProps {
   theme?: BackgroundTheme;
@@ -14,9 +14,7 @@ export const GameBackground: React.FC<GameBackgroundProps> = ({ theme = 'dark' }
       {/* Subtle gradient overlay for depth */}
       <View style={[styles.gradient, { backgroundColor: themeData.colors.accent }]} />
 
-      {theme === 'ocean' && (
-        <View style={styles.oceanWave} />
-      )}
+      {theme === 'ocean' && <View style={styles.oceanWave} />}
     </View>
   );
 };

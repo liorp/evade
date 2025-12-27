@@ -1,5 +1,13 @@
 import { GAME } from '../constants';
-import { Position, Handedness, SpawnZone, Enemy, SpeedTier, Booster, BoosterType } from '../types';
+import type {
+  Booster,
+  BoosterType,
+  Enemy,
+  Handedness,
+  Position,
+  SpawnZone,
+  SpeedTier,
+} from '../types';
 
 interface SpawnPoint {
   position: Position;
@@ -15,15 +23,14 @@ function isInExclusionZone(
   y: number,
   screenWidth: number,
   screenHeight: number,
-  handedness: Handedness
+  handedness: Handedness,
 ): boolean {
   const exclusionX = screenWidth * GAME.EXCLUSION_ZONE_PERCENT;
   const exclusionY = screenHeight * GAME.EXCLUSION_ZONE_PERCENT;
 
   if (handedness === 'right') {
     // Exclude bottom-right area
-    const isBottomRight =
-      x > screenWidth - exclusionX && y > screenHeight - exclusionY;
+    const isBottomRight = x > screenWidth - exclusionX && y > screenHeight - exclusionY;
     const isRightBottomEdge =
       x >= screenWidth - 1 && y > screenHeight - screenHeight * GAME.EXCLUSION_ZONE_PERCENT;
     const isBottomRightEdge =
@@ -34,8 +41,7 @@ function isInExclusionZone(
     const isBottomLeft = x < exclusionX && y > screenHeight - exclusionY;
     const isLeftBottomEdge =
       x <= 1 && y > screenHeight - screenHeight * GAME.EXCLUSION_ZONE_PERCENT;
-    const isBottomLeftEdge =
-      y >= screenHeight - 1 && x < screenWidth * GAME.EXCLUSION_ZONE_PERCENT;
+    const isBottomLeftEdge = y >= screenHeight - 1 && x < screenWidth * GAME.EXCLUSION_ZONE_PERCENT;
     return isBottomLeft || isLeftBottomEdge || isBottomLeftEdge;
   }
 }
@@ -43,7 +49,7 @@ function isInExclusionZone(
 function getCornerSpawnPoints(
   screenWidth: number,
   screenHeight: number,
-  handedness: Handedness
+  handedness: Handedness,
 ): SpawnPoint[] {
   const corners: SpawnPoint[] = [
     { position: { x: 0, y: 0 }, type: 'corner' }, // TL
@@ -53,14 +59,14 @@ function getCornerSpawnPoints(
   ];
 
   return corners.filter(
-    (c) => !isInExclusionZone(c.position.x, c.position.y, screenWidth, screenHeight, handedness)
+    (c) => !isInExclusionZone(c.position.x, c.position.y, screenWidth, screenHeight, handedness),
   );
 }
 
 function getEdgeSpawnPoints(
   screenWidth: number,
   screenHeight: number,
-  handedness: Handedness
+  handedness: Handedness,
 ): SpawnPoint[] {
   const edges: SpawnPoint[] = [
     // Top edge midpoint
@@ -74,14 +80,14 @@ function getEdgeSpawnPoints(
   ];
 
   return edges.filter(
-    (e) => !isInExclusionZone(e.position.x, e.position.y, screenWidth, screenHeight, handedness)
+    (e) => !isInExclusionZone(e.position.x, e.position.y, screenWidth, screenHeight, handedness),
   );
 }
 
 function getRandomEdgePoint(
   screenWidth: number,
   screenHeight: number,
-  handedness: Handedness
+  handedness: Handedness,
 ): Position {
   const maxAttempts = 20;
   for (let i = 0; i < maxAttempts; i++) {
@@ -101,7 +107,6 @@ function getRandomEdgePoint(
         x = 0;
         y = Math.random() * screenHeight;
         break;
-      case 3: // Right
       default:
         x = screenWidth;
         y = Math.random() * screenHeight;
@@ -121,7 +126,7 @@ export function getSpawnPosition(
   spawnZone: SpawnZone,
   screenWidth: number,
   screenHeight: number,
-  handedness: Handedness
+  handedness: Handedness,
 ): Position {
   if (spawnZone === 'corner') {
     const corners = getCornerSpawnPoints(screenWidth, screenHeight, handedness);
@@ -145,7 +150,7 @@ function getSpeedTier(playTime: number): { tier: SpeedTier; speed: number } {
   // 45s+: All types with progressive distribution toward faster
 
   const MEDIUM_UNLOCK_TIME = 20000; // 20 seconds
-  const FAST_UNLOCK_TIME = 45000;   // 45 seconds
+  const FAST_UNLOCK_TIME = 45000; // 45 seconds
 
   // Only slow enemies initially
   if (playTime < MEDIUM_UNLOCK_TIME) {
@@ -169,7 +174,7 @@ function getSpeedTier(playTime: number): { tier: SpeedTier; speed: number } {
   // At 120s+: 20% slow, 40% medium, 40% fast
   const progressFactor = Math.min((playTime - FAST_UNLOCK_TIME) / 75000, 1); // 0 to 1 over 75s after unlock
 
-  const slowChance = 0.5 - progressFactor * 0.3;    // 50% -> 20%
+  const slowChance = 0.5 - progressFactor * 0.3; // 50% -> 20%
   const mediumChance = 0.35 + progressFactor * 0.05; // 35% -> 40%
   // fast is the remainder: 15% -> 40%
 
@@ -202,7 +207,7 @@ export function shouldSpawn(
   currentTime: number,
   spawnInterval: number,
   currentEnemies: number,
-  maxEnemies: number
+  maxEnemies: number,
 ): boolean {
   if (currentEnemies >= maxEnemies) return false;
   return currentTime - lastSpawnTime >= spawnInterval;
@@ -217,7 +222,7 @@ function getRandomBoosterType(): BoosterType {
 export function getBoosterSpawnPosition(
   screenWidth: number,
   screenHeight: number,
-  playerPosition: Position
+  playerPosition: Position,
 ): Position {
   // Spawn boosters in a random position, but not too close to edges or player
   const margin = 80;
@@ -250,7 +255,7 @@ export function createBooster(position: Position, currentTime: number): Booster 
 export function shouldSpawnBooster(
   lastBoosterSpawnTime: number,
   currentTime: number,
-  currentBoosters: number
+  currentBoosters: number,
 ): boolean {
   // Only one booster at a time
   if (currentBoosters >= 1) return false;

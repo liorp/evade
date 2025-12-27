@@ -1,11 +1,11 @@
 import React from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
-  useSharedValue,
+  Easing,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  Easing,
 } from 'react-native-reanimated';
 import Svg, { Polygon } from 'react-native-svg';
 import { COLORS } from '../const/colors';
@@ -32,13 +32,7 @@ const Hexagon: React.FC<{ size: number; stroke: string; opacity: number }> = ({
 
   return (
     <Svg width={size} height={size}>
-      <Polygon
-        points={points}
-        fill="none"
-        stroke={stroke}
-        strokeWidth={1}
-        opacity={opacity}
-      />
+      <Polygon points={points} fill="none" stroke={stroke} strokeWidth={1} opacity={opacity} />
     </Svg>
   );
 };
@@ -53,7 +47,7 @@ const Halo: React.FC<HaloProps> = ({ size, x, y, rotationDirection, opacity = 0.
         easing: Easing.linear,
       }),
       -1,
-      false
+      false,
     );
   }, [rotation, rotationDirection]);
 

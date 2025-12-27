@@ -1,5 +1,5 @@
 import { GAME } from '../constants';
-import { Position, Enemy, Booster } from '../types';
+import type { Booster, Enemy, Position } from '../types';
 
 function distance(a: Position, b: Position): number {
   const dx = a.x - b.x;
@@ -19,7 +19,10 @@ export function checkCollision(playerPosition: Position, enemies: Enemy[]): bool
   return false;
 }
 
-export function checkBoosterCollision(playerPosition: Position, boosters: Booster[]): Booster | null {
+export function checkBoosterCollision(
+  playerPosition: Position,
+  boosters: Booster[],
+): Booster | null {
   const collisionDistance = GAME.PLAYER_RADIUS + GAME.BOOSTER_RADIUS;
 
   for (const booster of boosters) {

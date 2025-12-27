@@ -1,10 +1,10 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type React from 'react';
 import { useTranslation } from 'react-i18next';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../const/colors';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
+import { ChromeText, GlassButton, SynthwaveBackground } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -74,7 +74,9 @@ export const InstructionsScreen: React.FC<InstructionsProps> = ({ navigation, ro
           {/* Enemies */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('instructions.enemies')}</Text>
-            <Text style={[styles.text, { marginBottom: 12 }]}>{t('instructions.shapeShowsSpeed')}</Text>
+            <Text style={[styles.text, { marginBottom: 12 }]}>
+              {t('instructions.shapeShowsSpeed')}
+            </Text>
             <View style={styles.colorRow}>
               <View style={[styles.enemyShape, styles.circle]} />
               <Text style={styles.colorLabel}>{t('instructions.slow')}</Text>

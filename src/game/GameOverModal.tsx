@@ -1,8 +1,8 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import type React from 'react';
 import { useTranslation } from 'react-i18next';
-import { HexFrame, ChromeText, GlassButton } from '../ui';
+import { StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '../const/colors';
+import { ChromeText, GlassButton, HexFrame } from '../ui';
 
 interface GameOverModalProps {
   visible: boolean;
@@ -32,12 +32,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
   return (
     <View style={styles.overlay}>
-      <HexFrame
-        width={MODAL_WIDTH}
-        height={MODAL_HEIGHT}
-        color="magenta"
-        glowPulse
-      >
+      <HexFrame width={MODAL_WIDTH} height={MODAL_HEIGHT} color="magenta" glowPulse>
         <View style={styles.content}>
           <ChromeText size={32} color="magenta" glowPulse={false}>
             {t('play.gameOver')}
@@ -57,9 +52,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
             </ChromeText>
           </View>
 
-          {shardsEarned > 0 && (
-            <Text style={styles.shardsText}>+{shardsEarned} 💎</Text>
-          )}
+          {shardsEarned > 0 && <Text style={styles.shardsText}>+{shardsEarned} 💎</Text>}
 
           <View style={styles.buttonsContainer}>
             <GlassButton

@@ -1,11 +1,11 @@
 import React from 'react';
-import { StyleSheet, View, Text, TextStyle } from 'react-native';
+import { StyleSheet, Text, type TextStyle, View } from 'react-native';
 import Animated, {
-  useSharedValue,
+  cancelAnimation,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  cancelAnimation,
 } from 'react-native-reanimated';
 import { COLORS } from '../const/colors';
 
@@ -44,11 +44,7 @@ export const ChromeText: React.FC<ChromeTextProps> = ({
 
   React.useEffect(() => {
     if (glowPulse) {
-      glowOpacity.value = withRepeat(
-        withTiming(1, { duration: 1500 }),
-        -1,
-        true
-      );
+      glowOpacity.value = withRepeat(withTiming(1, { duration: 1500 }), -1, true);
     } else {
       cancelAnimation(glowOpacity);
       glowOpacity.value = 0.6; // Static glow when not pulsing
@@ -78,9 +74,7 @@ export const ChromeText: React.FC<ChromeTextProps> = ({
 
   return (
     <View style={styles.container}>
-      <Animated.Text style={[glowStyle, animatedGlowStyle]}>
-        {children}
-      </Animated.Text>
+      <Animated.Text style={[glowStyle, animatedGlowStyle]}>{children}</Animated.Text>
       <Text style={textStyle}>{children}</Text>
     </View>
   );

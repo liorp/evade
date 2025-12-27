@@ -1,10 +1,6 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, Pressable } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
+import { Pressable, StyleSheet } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { COLORS } from '../const/colors';
 
 interface NeonToggleProps {
@@ -47,18 +43,9 @@ export const NeonToggle: React.FC<NeonToggleProps> = ({
   }));
 
   return (
-    <Pressable
-      onPress={handlePress}
-      style={[styles.container, disabled && styles.disabled]}
-    >
+    <Pressable onPress={handlePress} style={[styles.container, disabled && styles.disabled]}>
       <Animated.View style={[styles.track, trackStyle]}>
-        <Animated.View
-          style={[
-            styles.thumb,
-            { shadowColor: COLORS.neonCyan },
-            thumbStyle,
-          ]}
-        />
+        <Animated.View style={[styles.thumb, { shadowColor: COLORS.neonCyan }, thumbStyle]} />
       </Animated.View>
     </Pressable>
   );

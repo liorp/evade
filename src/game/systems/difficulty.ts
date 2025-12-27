@@ -1,5 +1,5 @@
 import { GAME } from '../constants';
-import { DifficultyParams, SpawnZone } from '../types';
+import type { DifficultyParams, SpawnZone } from '../types';
 
 function lerp(start: number, end: number, elapsed: number, duration: number): number {
   const t = Math.min(elapsed / duration, 1);
@@ -12,27 +12,27 @@ export function getDifficultyParams(elapsedTime: number): DifficultyParams {
       GAME.INITIAL_SPAWN_INTERVAL,
       GAME.MIN_SPAWN_INTERVAL,
       elapsedTime,
-      GAME.SPAWN_SCALE_DURATION
+      GAME.SPAWN_SCALE_DURATION,
     ),
     enemySpeed: lerp(
       GAME.INITIAL_ENEMY_SPEED,
       GAME.MAX_ENEMY_SPEED,
       elapsedTime,
-      GAME.SPEED_SCALE_DURATION
+      GAME.SPEED_SCALE_DURATION,
     ),
     maxEnemies: Math.floor(
       lerp(
         GAME.INITIAL_MAX_ENEMIES,
         GAME.FINAL_MAX_ENEMIES,
         elapsedTime,
-        GAME.MAX_ENEMIES_SCALE_DURATION
-      )
+        GAME.MAX_ENEMIES_SCALE_DURATION,
+      ),
     ),
     jitterIntensity: lerp(
       GAME.INITIAL_JITTER,
       GAME.MAX_JITTER,
       elapsedTime,
-      GAME.JITTER_SCALE_DURATION
+      GAME.JITTER_SCALE_DURATION,
     ),
   };
 }

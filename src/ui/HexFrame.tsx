@@ -1,13 +1,13 @@
 import React from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
-import Svg, { Polygon } from 'react-native-svg';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
-  useSharedValue,
+  cancelAnimation,
   useAnimatedProps,
+  useSharedValue,
   withRepeat,
   withTiming,
-  cancelAnimation,
 } from 'react-native-reanimated';
+import Svg, { Polygon } from 'react-native-svg';
 import { COLORS } from '../const/colors';
 
 const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
@@ -40,11 +40,7 @@ export const HexFrame: React.FC<HexFrameProps> = ({
 
   React.useEffect(() => {
     if (glowPulse) {
-      glowOpacity.value = withRepeat(
-        withTiming(1, { duration: 1500 }),
-        -1,
-        true
-      );
+      glowOpacity.value = withRepeat(withTiming(1, { duration: 1500 }), -1, true);
     } else {
       cancelAnimation(glowOpacity);
       glowOpacity.value = 0.6;
@@ -70,15 +66,8 @@ export const HexFrame: React.FC<HexFrameProps> = ({
 
   return (
     <View style={[styles.container, { width, height }, style]}>
-      <View style={styles.background}>
-        {children}
-      </View>
-      <Svg
-        width={width}
-        height={height}
-        style={styles.frame}
-        pointerEvents="none"
-      >
+      <View style={styles.background}>{children}</View>
+      <Svg width={width} height={height} style={styles.frame} pointerEvents="none">
         <AnimatedPolygon
           points={points}
           fill="none"

@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { trackShardsChanged } from '../analytics';
 
 interface ShardState {
@@ -101,8 +101,8 @@ export const useShardStore = create<ShardState>()(
     {
       name: 'evade-shards',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 
 // Helper to calculate shards from score

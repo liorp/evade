@@ -1,23 +1,24 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
-  useAnimatedStyle,
-  SharedValue,
-  withRepeat,
-  withTiming,
-  useSharedValue,
-  withSequence,
-  interpolateColor,
   Easing,
+  interpolateColor,
+  type SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from 'react-native-reanimated';
-import { GAME } from '../game/constants';
 import {
-  PlayerShape,
-  PlayerColorId,
-  PlayerTrail,
-  PlayerGlow,
   PLAYER_COLORS,
+  type PlayerColorId,
+  type PlayerGlow,
+  type PlayerShape,
+  type PlayerTrail,
 } from '../cosmetics/constants';
+import { GAME } from '../game/constants';
 
 interface PlayerProps {
   x: SharedValue<number>;
@@ -57,13 +58,13 @@ export const Player: React.FC<PlayerProps> = ({
       glowPulse.value = withRepeat(
         withTiming(1.3, { duration: 800, easing: Easing.inOut(Easing.ease) }),
         -1,
-        true
+        true,
       );
     } else if (glow === 'rgb') {
       rgbProgress.value = withRepeat(
         withTiming(1, { duration: 2000, easing: Easing.linear }),
         -1,
-        false
+        false,
       );
     } else if (glow === 'constant') {
       glowPulse.value = 1.2;
@@ -77,11 +78,11 @@ export const Player: React.FC<PlayerProps> = ({
     if (dodgeFlashTrigger > 0) {
       dodgeFlashOpacity.value = withSequence(
         withTiming(0.8, { duration: 50 }),
-        withTiming(0, { duration: 200 })
+        withTiming(0, { duration: 200 }),
       );
       dodgeFlashScale.value = withSequence(
         withTiming(1.5, { duration: 100 }),
-        withTiming(1, { duration: 150 })
+        withTiming(1, { duration: 150 }),
       );
     }
   }, [dodgeFlashTrigger, dodgeFlashOpacity, dodgeFlashScale]);
@@ -89,11 +90,7 @@ export const Player: React.FC<PlayerProps> = ({
   // Shield animation
   useEffect(() => {
     if (hasShield) {
-      shieldPulse.value = withRepeat(
-        withTiming(1.2, { duration: 300 }),
-        -1,
-        true
-      );
+      shieldPulse.value = withRepeat(withTiming(1.2, { duration: 300 }), -1, true);
     } else {
       shieldPulse.value = 1;
     }
@@ -121,7 +118,7 @@ export const Player: React.FC<PlayerProps> = ({
       const color = interpolateColor(
         rgbProgress.value,
         [0, 0.33, 0.66, 1],
-        ['rgba(255,0,0,0.4)', 'rgba(0,255,0,0.4)', 'rgba(0,0,255,0.4)', 'rgba(255,0,0,0.4)']
+        ['rgba(255,0,0,0.4)', 'rgba(0,255,0,0.4)', 'rgba(0,0,255,0.4)', 'rgba(255,0,0,0.4)'],
       );
       return {
         backgroundColor: color,
@@ -170,9 +167,7 @@ export const Player: React.FC<PlayerProps> = ({
       {/* Shield */}
       {hasShield && <Animated.View style={[styles.shield, shieldStyle]} />}
       {/* Glow */}
-      {(glow !== 'none' || showTrail) && (
-        <Animated.View style={[styles.glow, glowStyle]} />
-      )}
+      {(glow !== 'none' || showTrail) && <Animated.View style={[styles.glow, glowStyle]} />}
       {/* Player shape */}
       {renderShape()}
     </Animated.View>

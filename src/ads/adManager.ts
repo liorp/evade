@@ -1,6 +1,6 @@
+import { type AdPlacement, trackAdCompleted, trackAdFailed, trackAdShown } from '../analytics';
 import { isExpoGo, isWeb } from '../utils/environment';
 import { AD_UNIT_IDS } from './constants';
-import { trackAdShown, trackAdCompleted, trackAdFailed, AdPlacement } from '../analytics';
 
 // Conditionally import real, web, or mock ads based on platform
 const getAdsModule = () => {
@@ -13,12 +13,7 @@ const getAdsModule = () => {
   return require('react-native-google-mobile-ads');
 };
 
-const {
-  InterstitialAd,
-  RewardedAd,
-  AdEventType,
-  RewardedAdEventType,
-} = getAdsModule();
+const { InterstitialAd, RewardedAd, AdEventType, RewardedAdEventType } = getAdsModule();
 
 interface AdInstance {
   addAdEventListener: (event: string, callback: (arg?: unknown) => void) => () => void;
@@ -40,12 +35,16 @@ class AdManager {
   }
 
   private cleanupInterstitial(): void {
-    this.interstitialUnsubscribers.forEach((unsub) => unsub());
+    this.interstitialUnsubscribers.forEach((unsub) => {
+      unsub();
+    });
     this.interstitialUnsubscribers = [];
   }
 
   private cleanupRewarded(): void {
-    this.rewardedUnsubscribers.forEach((unsub) => unsub());
+    this.rewardedUnsubscribers.forEach((unsub) => {
+      unsub();
+    });
     this.rewardedUnsubscribers = [];
   }
 
@@ -60,21 +59,21 @@ class AdManager {
     this.interstitialUnsubscribers.push(
       interstitial.addAdEventListener(AdEventType.LOADED, () => {
         this.isInterstitialLoaded = true;
-      })
+      }),
     );
 
     this.interstitialUnsubscribers.push(
       interstitial.addAdEventListener(AdEventType.CLOSED, () => {
         this.isInterstitialLoaded = false;
         this.loadInterstitial(); // Preload next ad
-      })
+      }),
     );
 
     this.interstitialUnsubscribers.push(
       interstitial.addAdEventListener(AdEventType.ERROR, (error: unknown) => {
         console.warn('Interstitial ad error:', error);
         this.isInterstitialLoaded = false;
-      })
+      }),
     );
 
     interstitial.load();
@@ -91,21 +90,21 @@ class AdManager {
     this.rewardedUnsubscribers.push(
       rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
         this.isRewardedLoaded = true;
-      })
+      }),
     );
 
     this.rewardedUnsubscribers.push(
       rewarded.addAdEventListener(AdEventType.CLOSED, () => {
         this.isRewardedLoaded = false;
         this.loadRewarded(); // Preload next ad
-      })
+      }),
     );
 
     this.rewardedUnsubscribers.push(
       rewarded.addAdEventListener(AdEventType.ERROR, (error: unknown) => {
         console.warn('Rewarded ad error:', error);
         this.isRewardedLoaded = false;
-      })
+      }),
     );
 
     rewarded.load();
@@ -130,7 +129,10 @@ class AdManager {
     }
   }
 
-  async showRewarded(onRewarded: () => void, placement: AdPlacement = 'continue'): Promise<boolean> {
+  async showRewarded(
+    onRewarded: () => void,
+    placement: AdPlacement = 'continue',
+  ): Promise<boolean> {
     if (!this.isRewardedLoaded || !this.rewarded) {
       return false;
     }
@@ -146,19 +148,21 @@ class AdManager {
           rewardGranted = true;
           onRewarded();
           unsubscribe();
-        }
+        },
       );
 
-      this.rewarded!.show().then(() => {
-        trackAdCompleted({ ad_type: 'rewarded', placement, reward_granted: rewardGranted });
-        resolve(true);
-      }).catch((error: unknown) => {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        trackAdFailed({ ad_type: 'rewarded', placement, error: errorMessage });
-        console.warn('Failed to show rewarded:', error);
-        unsubscribe();
-        resolve(false);
-      });
+      this.rewarded!.show()
+        .then(() => {
+          trackAdCompleted({ ad_type: 'rewarded', placement, reward_granted: rewardGranted });
+          resolve(true);
+        })
+        .catch((error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          trackAdFailed({ ad_type: 'rewarded', placement, error: errorMessage });
+          console.warn('Failed to show rewarded:', error);
+          unsubscribe();
+          resolve(false);
+        });
     });
   }
 

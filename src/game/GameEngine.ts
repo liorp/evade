@@ -1,19 +1,24 @@
-import { GameState, Position, Handedness, Enemy, Booster, ActiveEffects } from './types';
-import { checkCollision, checkBoosterCollision, checkCloseDodges } from './systems/collision';
-import { getDifficultyParams, getSpawnZone } from './systems/difficulty';
-import {
-  getSpawnPosition,
-  createEnemy,
-  shouldSpawn,
-  getBoosterSpawnPosition,
-  createBooster,
-  shouldSpawnBooster,
-  isBoosterExpired,
-} from './systems/spawn';
-import { updateEnemies } from './systems/movement';
 import { GAME } from './constants';
+import { checkCloseDodges, checkCollision } from './systems/collision';
+import { getDifficultyParams, getSpawnZone } from './systems/difficulty';
+import { updateEnemies } from './systems/movement';
+import {
+  createBooster,
+  createEnemy,
+  getBoosterSpawnPosition,
+  getSpawnPosition,
+  isBoosterExpired,
+  shouldSpawn,
+  shouldSpawnBooster,
+} from './systems/spawn';
+import type { Booster, GameState, Handedness } from './types';
 
-export type GameEventType = 'gameOver' | 'scoreUpdate' | 'stateChange' | 'boosterCollected' | 'closeDodge';
+export type GameEventType =
+  | 'gameOver'
+  | 'scoreUpdate'
+  | 'stateChange'
+  | 'boosterCollected'
+  | 'closeDodge';
 export type GameEventCallback = (event: GameEventType, data?: unknown) => void;
 
 export class GameEngine {
@@ -137,8 +142,9 @@ export class GameEngine {
       (enemy) =>
         Math.hypot(
           enemy.position.x - this.state.playerPosition.x,
-          enemy.position.y - this.state.playerPosition.y
-        ) > GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS + 100
+          enemy.position.y - this.state.playerPosition.y,
+        ) >
+        GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS + 100,
     );
 
     this.lastTimestamp = now;
@@ -174,8 +180,9 @@ export class GameEngine {
           (enemy) =>
             Math.hypot(
               enemy.position.x - this.state.playerPosition.x,
-              enemy.position.y - this.state.playerPosition.y
-            ) > GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS + 50
+              enemy.position.y - this.state.playerPosition.y,
+            ) >
+            GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS + 50,
         );
         // Deactivate shield after use
         this.state.activeEffects.shield.active = false;
@@ -212,7 +219,7 @@ export class GameEngine {
         timestamp,
         difficulty.spawnInterval,
         this.state.enemies.length,
-        difficulty.maxEnemies
+        difficulty.maxEnemies,
       )
     ) {
       const spawnZone = getSpawnZone(this.state.playTime);
@@ -220,7 +227,7 @@ export class GameEngine {
         spawnZone,
         this.state.screenWidth,
         this.state.screenHeight,
-        this.handedness
+        this.handedness,
       );
       const enemy = createEnemy(position, timestamp, this.state.playTime);
       this.state.enemies.push(enemy);
@@ -229,16 +236,12 @@ export class GameEngine {
 
     // 4. Spawn boosters
     if (
-      shouldSpawnBooster(
-        this.state.lastBoosterSpawnTime,
-        timestamp,
-        this.state.boosters.length
-      )
+      shouldSpawnBooster(this.state.lastBoosterSpawnTime, timestamp, this.state.boosters.length)
     ) {
       const position = getBoosterSpawnPosition(
         this.state.screenWidth,
         this.state.screenHeight,
-        this.state.playerPosition
+        this.state.playerPosition,
       );
       const booster = createBooster(position, timestamp);
       this.state.boosters.push(booster);
@@ -247,7 +250,7 @@ export class GameEngine {
 
     // 5. Remove expired boosters
     this.state.boosters = this.state.boosters.filter(
-      (booster) => !isBoosterExpired(booster, timestamp)
+      (booster) => !isBoosterExpired(booster, timestamp),
     );
 
     // 6. Move enemies and track removed (each enemy uses its own speed)
@@ -258,7 +261,7 @@ export class GameEngine {
       timestamp,
       difficulty.jitterIntensity,
       this.state.screenWidth,
-      this.state.screenHeight
+      this.state.screenHeight,
     );
     this.state.enemies = result.enemies;
 
@@ -266,7 +269,9 @@ export class GameEngine {
     if (result.removedCount > 0) {
       const timeMultiplier = 1 + this.state.playTime / 60000; // +1x per minute
       const enemyCountMultiplier = this.getEnemyCountMultiplier();
-      let pointsPerEnemy = Math.floor(GAME.POINTS_PER_ENEMY * timeMultiplier * enemyCountMultiplier);
+      let pointsPerEnemy = Math.floor(
+        GAME.POINTS_PER_ENEMY * timeMultiplier * enemyCountMultiplier,
+      );
 
       // Apply booster multiplier if active
       if (this.state.activeEffects.multiplier.active) {
@@ -301,7 +306,7 @@ export class GameEngine {
     for (const booster of this.state.boosters) {
       const distance = Math.hypot(
         booster.position.x - this.state.playerPosition.x,
-        booster.position.y - this.state.playerPosition.y
+        booster.position.y - this.state.playerPosition.y,
       );
       if (distance < GAME.PLAYER_RADIUS + GAME.BOOSTER_RADIUS) {
         return booster;

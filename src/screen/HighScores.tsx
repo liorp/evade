@@ -1,11 +1,11 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
 import { useHighscoreStore } from '../state/highscoreStore';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
+import { ChromeText, GlassButton, SynthwaveBackground } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;

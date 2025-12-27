@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Handedness } from '../game/types';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { Handedness } from '../game/types';
 
 interface SettingsState {
   handedness: Handedness;
@@ -29,6 +29,6 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'evade-settings',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );

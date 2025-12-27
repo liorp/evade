@@ -1,17 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Svg, { Circle } from 'react-native-svg';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
   cancelAnimation,
   Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
-import { COLORS } from '../const/colors';
+import Svg, { Circle } from 'react-native-svg';
 import { adManager } from '../ads/adManager';
-import { HexFrame, ChromeText, GlassButton } from '../ui';
+import { COLORS } from '../const/colors';
+import { ChromeText, GlassButton, HexFrame } from '../ui';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -100,13 +101,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
 
   return (
     <View style={styles.overlay}>
-      <HexFrame
-        width={320}
-        height={340}
-        color="cyan"
-        glowPulse
-        style={styles.frame}
-      >
+      <HexFrame width={320} height={340} color="cyan" glowPulse style={styles.frame}>
         <View style={styles.content}>
           <ChromeText size={32} color="cyan" glowPulse={false}>
             {t('continue.title', 'Continue?')}
@@ -114,11 +109,7 @@ export const ContinueModal: React.FC<ContinueModalProps> = ({
 
           {/* Countdown ring with number */}
           <View style={styles.countdownContainer}>
-            <Svg
-              width={RING_SIZE}
-              height={RING_SIZE}
-              style={styles.ringSvg}
-            >
+            <Svg width={RING_SIZE} height={RING_SIZE} style={styles.ringSvg}>
               {/* Background ring */}
               <Circle
                 cx={RING_SIZE / 2}

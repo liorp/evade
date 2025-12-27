@@ -55,8 +55,7 @@ export default {
     title: 'High Scores',
     clearAllScores: 'Clear All Scores',
     clearConfirmTitle: 'Clear All Scores',
-    clearConfirmMessage:
-      'Are you sure you want to delete all high scores? This cannot be undone.',
+    clearConfirmMessage: 'Are you sure you want to delete all high scores? This cannot be undone.',
     noScoresYet: 'No scores yet!',
     playToSetScore: 'Play a game to set your first high score.',
     rank: '#',
@@ -68,8 +67,7 @@ export default {
   instructions: {
     title: 'HOW TO PLAY',
     goal: 'GOAL',
-    goalText:
-      'Survive as long as possible by evading enemies.',
+    goalText: 'Survive as long as possible by evading enemies.',
     controlsTitle: 'CONTROLS',
     controlsText:
       'Touch and drag to move your player (green dot). Keep your finger on the screen - lifting it ends the game!',

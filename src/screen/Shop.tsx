@@ -1,33 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '../const/colors';
-import {
-  CosmeticCategory,
-  CosmeticItem,
-  getCosmeticItems,
-} from '../cosmetics/constants';
-import { useShardStore } from '../state/shardStore';
-import { useCosmeticStore } from '../state/cosmeticStore';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { adManager } from '../ads/adManager';
-import { SHARD_PACKS } from '../iap/constants';
-import { iapManager } from '../iap/iapManager';
 import {
-  trackShopOpened,
-  trackShopCategoryViewed,
   trackItemPreviewed,
   trackItemPurchased,
+  trackShopCategoryViewed,
+  trackShopOpened,
 } from '../analytics';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
+import { COLORS } from '../const/colors';
+import { type CosmeticCategory, type CosmeticItem, getCosmeticItems } from '../cosmetics/constants';
+import { SHARD_PACKS } from '../iap/constants';
+import { iapManager } from '../iap/iapManager';
+import { useCosmeticStore } from '../state/cosmeticStore';
+import { useShardStore } from '../state/shardStore';
+import { ChromeText, GlassButton, SynthwaveBackground } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -75,7 +65,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
         t('shop.insufficientShards', 'Not Enough Shards'),
         t('shop.needMoreShards', 'You need {{amount}} more shards.', {
           amount: item.price - balance,
-        })
+        }),
       );
       return;
     }
@@ -102,7 +92,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
             }
           },
         },
-      ]
+      ],
     );
   };
 

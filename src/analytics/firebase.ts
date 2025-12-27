@@ -91,10 +91,7 @@ export async function initializeFirebaseAnalytics(): Promise<void> {
   }
 }
 
-export async function logEvent(
-  eventName: string,
-  params?: object
-): Promise<void> {
+export async function logEvent(eventName: string, params?: object): Promise<void> {
   if (analyticsConfig.debug) {
     console.log(`[Analytics] ${eventName}`, params);
   }
@@ -117,10 +114,7 @@ export async function logEvent(
   }
 }
 
-export async function setUserProperty(
-  name: string,
-  value: string | null
-): Promise<void> {
+export async function setUserProperty(name: string, value: string | null): Promise<void> {
   try {
     if (isWeb) {
       const analytics = await getWebAnalytics();

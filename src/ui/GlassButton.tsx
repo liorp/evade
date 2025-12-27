@@ -1,8 +1,8 @@
-import React from 'react';
-import { StyleSheet, Pressable, Text, ViewStyle } from 'react-native';
+import type React from 'react';
+import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';

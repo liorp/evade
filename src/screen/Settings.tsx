@@ -1,16 +1,16 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
-import { COLORS } from '../const/colors';
-import { useSettingsStore } from '../state/settingsStore';
-import { usePurchaseStore } from '../state/purchaseStore';
-import { useAdStore } from '../state/adStore';
-import { iapManager } from '../iap/iapManager';
-import { IAP_PRICES } from '../iap/constants';
 import { trackSettingChanged } from '../analytics';
-import { SynthwaveBackground, ChromeText, GlassButton, NeonToggle } from '../ui';
+import { COLORS } from '../const/colors';
+import { IAP_PRICES } from '../iap/constants';
+import { iapManager } from '../iap/iapManager';
+import { useAdStore } from '../state/adStore';
+import { usePurchaseStore } from '../state/purchaseStore';
+import { useSettingsStore } from '../state/settingsStore';
+import { ChromeText, GlassButton, NeonToggle, SynthwaveBackground } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -24,14 +24,8 @@ interface SettingsProps {
 
 export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
   const { t } = useTranslation();
-  const {
-    handedness,
-    musicEnabled,
-    sfxEnabled,
-    setHandedness,
-    setMusicEnabled,
-    setSfxEnabled,
-  } = useSettingsStore();
+  const { handedness, musicEnabled, sfxEnabled, setHandedness, setMusicEnabled, setSfxEnabled } =
+    useSettingsStore();
   const { adsRemoved, setAdsRemoved } = usePurchaseStore();
   const { setAdsRemoved: setAdStoreAdsRemoved } = useAdStore();
 
@@ -110,17 +104,11 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
           </View>
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>{t('settings.backgroundMusic')}</Text>
-            <NeonToggle
-              value={musicEnabled}
-              onValueChange={handleMusicChange}
-            />
+            <NeonToggle value={musicEnabled} onValueChange={handleMusicChange} />
           </View>
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>{t('settings.soundEffects')}</Text>
-            <NeonToggle
-              value={sfxEnabled}
-              onValueChange={handleSfxChange}
-            />
+            <NeonToggle value={sfxEnabled} onValueChange={handleSfxChange} />
           </View>
 
           {/* Controls Section */}
@@ -131,33 +119,19 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
           <Text style={styles.settingLabel}>{t('settings.handedness')}</Text>
           <View style={styles.segmentedControl}>
             <Pressable
-              style={[
-                styles.segment,
-                handedness === 'left' && styles.segmentActive,
-              ]}
+              style={[styles.segment, handedness === 'left' && styles.segmentActive]}
               onPress={() => handleHandednessChange('left')}
             >
-              <Text
-                style={[
-                  styles.segmentText,
-                  handedness === 'left' && styles.segmentTextActive,
-                ]}
-              >
+              <Text style={[styles.segmentText, handedness === 'left' && styles.segmentTextActive]}>
                 {t('settings.left')}
               </Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.segment,
-                handedness === 'right' && styles.segmentActive,
-              ]}
+              style={[styles.segment, handedness === 'right' && styles.segmentActive]}
               onPress={() => handleHandednessChange('right')}
             >
               <Text
-                style={[
-                  styles.segmentText,
-                  handedness === 'right' && styles.segmentTextActive,
-                ]}
+                style={[styles.segmentText, handedness === 'right' && styles.segmentTextActive]}
               >
                 {t('settings.right')}
               </Text>

@@ -16,12 +16,32 @@ npm run ios:simulator        # Run on iOS simulator
 npm run ios:device           # Run on iOS device
 npm run web                  # Run web version
 
-# Type checking
-npm run typecheck            # Run TypeScript compiler (tsc --noEmit)
+# Code quality
+npm run lint                 # Run Biome linter
+npm run lint:fix             # Fix lint issues automatically
+npm run format               # Format code with Biome
+npm run typecheck            # Run tsgo type checker (~10x faster than tsc)
+npm run typecheck:tsc        # Run standard TypeScript compiler
+npm run check                # Run lint + typecheck together
 
 # Remote device testing
 npm run tunnel               # Start with Expo tunnel
 ```
+
+## CRITICAL: Pre-Commit Requirements
+
+**ALWAYS run these commands before committing:**
+
+```bash
+npm run check                # Runs lint + typecheck
+```
+
+This is enforced via Husky pre-commit hooks. If the commit fails, fix the issues before committing.
+
+**Common lint fixes:**
+- Unused imports: Remove them or use `npm run lint:fix`
+- Type-only imports: Use `import type { X }` for types
+- Missing dependencies in useEffect: Add them to the dependency array
 
 Native builds use EAS (Expo Application Services) configured in `eas.json`.
 
@@ -39,18 +59,22 @@ Native builds use EAS (Expo Application Services) configured in `eas.json`.
 
 ```
 /src
-├── /ads              # Ad SDK management (google-mobile-ads)
+├── /ads              # Ad SDK management + constants
+├── /analytics        # Firebase analytics
 ├── /audio            # Background music & SFX (expo-av)
-├── /components       # Shared UI components
-├── /const            # Game constants, colors, cosmetic definitions, IAP/ad IDs
+├── /const            # Shared constants (colors)
+├── /cosmetics        # Cosmetic definitions and constants
 ├── /entity           # Game object components (Player, Enemy, Booster, backgrounds)
-├── /game             # Game engine core
+├── /game             # Game engine core + game modals
 │   ├── GameEngine.ts # Central game loop, state management, event emitter
-│   └── /systems      # Modular systems: spawn, movement, collision, difficulty
+│   ├── /systems      # Modular systems: spawn, movement, collision, difficulty
+│   ├── ContinueModal # Continue game modal
+│   └── GameOverModal # Game over modal
 ├── /i18n             # Internationalization setup and locale files
-├── /iap              # In-app purchase management (expo-iap)
+├── /iap              # In-app purchase management + constants
 ├── /screen           # Navigation screens (MainMenu, Play, Shop, Settings, etc.)
-└── /state            # Zustand stores (ads, cosmetics, highscores, purchases, settings, shards)
+├── /state            # Zustand stores (ads, cosmetics, highscores, purchases, settings, shards)
+└── /ui               # Reusable UI components (ChromeText, GlassButton, HexFrame, etc.)
 ```
 
 ### Game Engine Architecture
@@ -68,7 +92,7 @@ The game uses a modular systems-based architecture:
    - `collision.ts` - Collision detection, close dodge tracking
    - `difficulty.ts` - Time-based difficulty scaling
 
-3. **Game Constants** (`/const/game.ts`) - All balance values centralized
+3. **Game Constants** (`/game/constants.ts`) - All balance values centralized
 
 ### State Management
 
@@ -86,11 +110,11 @@ Multiple specialized Zustand stores with persistence:
 - **AdManager** (`/src/ads/`) - Initializes and shows interstitial/rewarded ads
 - **IAPManager** (`/src/iap/`) - Handles purchases (ad removal, shard packs)
 - **App.tsx** - Syncs purchase state across stores on startup
-- Product IDs and ad unit IDs in `/src/const/`
+- Product IDs in `/src/iap/constants.ts`, ad unit IDs in `/src/ads/constants.ts`
 
 ### Cosmetics System
 
-40+ cosmetics across 6 categories defined in `/src/const/cosmetics.ts`:
+40+ cosmetics across 6 categories defined in `/src/cosmetics/constants.ts`:
 - Player colors, shapes, trails, glows
 - Enemy themes, background themes
 

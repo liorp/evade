@@ -1,14 +1,14 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
-  withTiming,
   useSharedValue,
   withRepeat,
   withSequence,
+  withTiming,
 } from 'react-native-reanimated';
 import { GAME } from '../game/constants';
-import { BoosterType } from '../game/types';
+import type { BoosterType } from '../game/types';
 
 interface BoosterProps {
   x: number;
@@ -30,14 +30,15 @@ export const Booster: React.FC<BoosterProps> = ({ x, y, type, ttlPercent, isNew 
     }
     // Pulsing animation
     pulse.value = withRepeat(
-      withSequence(
-        withTiming(1.1, { duration: 400 }),
-        withTiming(1, { duration: 400 })
-      ),
+      withSequence(withTiming(1.1, { duration: 400 }), withTiming(1, { duration: 400 })),
       -1,
-      true
+      true,
     );
-  }, []);
+  }, [
+    fadeIn,
+    isNew, // Pulsing animation
+    pulse,
+  ]);
 
   // Fade out in last ~200ms (4% of 5000ms lifetime)
   const fadeOut = ttlPercent < 0.04 ? ttlPercent / 0.04 : 1;
@@ -81,9 +82,7 @@ export const Booster: React.FC<BoosterProps> = ({ x, y, type, ttlPercent, isNew 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
       <View style={styles.boosterShape}>
-        <View style={styles.iconContainer}>
-          {renderIcon()}
-        </View>
+        <View style={styles.iconContainer}>{renderIcon()}</View>
       </View>
     </Animated.View>
   );

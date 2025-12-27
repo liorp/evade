@@ -29,7 +29,10 @@ class MockInterstitialAd {
     this.listeners.set(event, [...existing, callback]);
     return () => {
       const callbacks = this.listeners.get(event) || [];
-      this.listeners.set(event, callbacks.filter((cb) => cb !== callback));
+      this.listeners.set(
+        event,
+        callbacks.filter((cb) => cb !== callback),
+      );
     };
   }
 
@@ -37,7 +40,9 @@ class MockInterstitialAd {
     // Simulate ad loading after a short delay
     setTimeout(() => {
       const callbacks = this.listeners.get(AdEventType.LOADED) || [];
-      callbacks.forEach((cb) => cb());
+      callbacks.forEach((cb) => {
+        cb();
+      });
     }, 500);
   }
 
@@ -46,7 +51,9 @@ class MockInterstitialAd {
     // Simulate ad display
     setTimeout(() => {
       const callbacks = this.listeners.get(AdEventType.CLOSED) || [];
-      callbacks.forEach((cb) => cb());
+      callbacks.forEach((cb) => {
+        cb();
+      });
     }, 100);
   }
 }
@@ -63,7 +70,10 @@ class MockRewardedAd {
     this.listeners.set(event, [...existing, callback]);
     return () => {
       const callbacks = this.listeners.get(event) || [];
-      this.listeners.set(event, callbacks.filter((cb) => cb !== callback));
+      this.listeners.set(
+        event,
+        callbacks.filter((cb) => cb !== callback),
+      );
     };
   }
 
@@ -71,7 +81,9 @@ class MockRewardedAd {
     // Simulate ad loading after a short delay
     setTimeout(() => {
       const callbacks = this.listeners.get(RewardedAdEventType.LOADED) || [];
-      callbacks.forEach((cb) => (cb as AdEventCallback)());
+      callbacks.forEach((cb) => {
+        (cb as AdEventCallback)();
+      });
     }, 500);
   }
 
@@ -80,10 +92,14 @@ class MockRewardedAd {
     // Simulate earning reward
     setTimeout(() => {
       const rewardCallbacks = this.listeners.get(RewardedAdEventType.EARNED_REWARD) || [];
-      rewardCallbacks.forEach((cb) => (cb as RewardCallback)({ type: 'coins', amount: 1 }));
+      rewardCallbacks.forEach((cb) => {
+        (cb as RewardCallback)({ type: 'coins', amount: 1 });
+      });
 
       const closedCallbacks = this.listeners.get(AdEventType.CLOSED) || [];
-      closedCallbacks.forEach((cb) => (cb as AdEventCallback)());
+      closedCallbacks.forEach((cb) => {
+        (cb as AdEventCallback)();
+      });
     }, 100);
   }
 }

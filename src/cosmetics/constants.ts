@@ -3,8 +3,16 @@ export type PlayerShape = 'circle' | 'square' | 'triangle' | 'hexagon' | 'star';
 
 // Player colors (hex values)
 export type PlayerColorId =
-  | 'green' | 'cyan' | 'pink' | 'orange' | 'purple'
-  | 'gold' | 'ice' | 'lime' | 'coral' | 'violet';
+  | 'green'
+  | 'cyan'
+  | 'pink'
+  | 'orange'
+  | 'purple'
+  | 'gold'
+  | 'ice'
+  | 'lime'
+  | 'coral'
+  | 'violet';
 
 // Player trail types
 export type PlayerTrail = 'none' | 'particle' | 'ghost' | 'rainbow' | 'fire';
@@ -19,7 +27,13 @@ export type EnemyTheme = 'classic' | 'neon' | 'retro' | 'minimal' | 'spooky';
 export type BackgroundTheme = 'dark' | 'void' | 'synthwave' | 'ocean' | 'sunset';
 
 // Cosmetic categories
-export type CosmeticCategory = 'playerColor' | 'playerShape' | 'playerTrail' | 'playerGlow' | 'enemyTheme' | 'backgroundTheme';
+export type CosmeticCategory =
+  | 'playerColor'
+  | 'playerShape'
+  | 'playerTrail'
+  | 'playerGlow'
+  | 'enemyTheme'
+  | 'backgroundTheme';
 
 // Cosmetic item interface
 export interface CosmeticItem {
@@ -31,7 +45,10 @@ export interface CosmeticItem {
 }
 
 // Player color definitions
-export const PLAYER_COLORS: Record<PlayerColorId, { name: string; hex: string; glowHex: string; price: number }> = {
+export const PLAYER_COLORS: Record<
+  PlayerColorId,
+  { name: string; hex: string; glowHex: string; price: number }
+> = {
   green: { name: 'Emerald', hex: '#00ffaa', glowHex: 'rgba(0, 255, 170, 0.4)', price: 0 },
   cyan: { name: 'Cyan', hex: '#00ffff', glowHex: 'rgba(0, 255, 255, 0.4)', price: 100 },
   pink: { name: 'Hot Pink', hex: '#ff44aa', glowHex: 'rgba(255, 68, 170, 0.4)', price: 100 },
@@ -71,16 +88,34 @@ export const PLAYER_GLOWS: Record<PlayerGlow, { name: string; price: number }> =
 };
 
 // Enemy theme definitions
-export const ENEMY_THEMES: Record<EnemyTheme, { name: string; price: number; colors: { base: string; glow: string } }> = {
-  classic: { name: 'Classic', price: 0, colors: { base: '#ff4444', glow: 'rgba(255, 68, 68, 0.3)' } },
+export const ENEMY_THEMES: Record<
+  EnemyTheme,
+  { name: string; price: number; colors: { base: string; glow: string } }
+> = {
+  classic: {
+    name: 'Classic',
+    price: 0,
+    colors: { base: '#ff4444', glow: 'rgba(255, 68, 68, 0.3)' },
+  },
   neon: { name: 'Neon', price: 500, colors: { base: '#00ff88', glow: 'rgba(0, 255, 136, 0.5)' } },
   retro: { name: 'Retro', price: 600, colors: { base: '#ffcc00', glow: 'rgba(255, 204, 0, 0.3)' } },
-  minimal: { name: 'Minimal', price: 500, colors: { base: '#ffffff', glow: 'rgba(255, 255, 255, 0.2)' } },
-  spooky: { name: 'Spooky', price: 700, colors: { base: '#aa44ff', glow: 'rgba(170, 68, 255, 0.4)' } },
+  minimal: {
+    name: 'Minimal',
+    price: 500,
+    colors: { base: '#ffffff', glow: 'rgba(255, 255, 255, 0.2)' },
+  },
+  spooky: {
+    name: 'Spooky',
+    price: 700,
+    colors: { base: '#aa44ff', glow: 'rgba(170, 68, 255, 0.4)' },
+  },
 };
 
 // Background theme definitions
-export const BACKGROUND_THEMES: Record<BackgroundTheme, { name: string; price: number; colors: { bg: string; accent: string } }> = {
+export const BACKGROUND_THEMES: Record<
+  BackgroundTheme,
+  { name: string; price: number; colors: { bg: string; accent: string } }
+> = {
   dark: { name: 'Dark', price: 0, colors: { bg: '#0a0a0f', accent: '#1a1a2e' } },
   void: { name: 'Void', price: 600, colors: { bg: '#000000', accent: '#0a0a0a' } },
   synthwave: { name: 'Synthwave', price: 800, colors: { bg: '#1a0a2e', accent: '#2a1a4e' } },

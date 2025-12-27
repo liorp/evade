@@ -1,13 +1,9 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  useSharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { ENEMY_THEMES, type EnemyTheme } from '../cosmetics/constants';
 import { GAME } from '../game/constants';
-import { SpeedTier } from '../game/types';
-import { EnemyTheme, ENEMY_THEMES } from '../cosmetics/constants';
+import type { SpeedTier } from '../game/types';
 
 interface EnemyProps {
   x: number;
@@ -56,10 +52,7 @@ export const Enemy: React.FC<EnemyProps> = ({
   const fadeOut = ttlPercent < 0.025 ? ttlPercent / 0.025 : 1;
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: x - GAME.ENEMY_RADIUS },
-      { translateY: y - GAME.ENEMY_RADIUS },
-    ],
+    transform: [{ translateX: x - GAME.ENEMY_RADIUS }, { translateY: y - GAME.ENEMY_RADIUS }],
     opacity: fadeIn.value * fadeOut,
   }));
 

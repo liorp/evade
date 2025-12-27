@@ -29,10 +29,30 @@ export interface RequestPurchaseParams {
 }
 
 const mockProducts: ProductOrSubscription[] = [
-  { id: 'remove_ads', displayPrice: '$3.99', displayName: 'Remove Ads', description: 'Remove all ads' },
-  { id: 'shards_100', displayPrice: '$0.99', displayName: '100 Shards', description: '100 shards pack' },
-  { id: 'shards_500', displayPrice: '$3.99', displayName: '500 Shards', description: '500 shards pack' },
-  { id: 'shards_1500', displayPrice: '$9.99', displayName: '1500 Shards', description: '1500 shards pack' },
+  {
+    id: 'remove_ads',
+    displayPrice: '$3.99',
+    displayName: 'Remove Ads',
+    description: 'Remove all ads',
+  },
+  {
+    id: 'shards_100',
+    displayPrice: '$0.99',
+    displayName: '100 Shards',
+    description: '100 shards pack',
+  },
+  {
+    id: 'shards_500',
+    displayPrice: '$3.99',
+    displayName: '500 Shards',
+    description: '500 shards pack',
+  },
+  {
+    id: 'shards_1500',
+    displayPrice: '$9.99',
+    displayName: '1500 Shards',
+    description: '1500 shards pack',
+  },
 ];
 
 export async function initConnection(): Promise<boolean> {

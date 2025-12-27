@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import type React from 'react';
+import { useEffect } from 'react';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
-  useSharedValue,
+  Easing,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  Easing,
 } from 'react-native-reanimated';
 import Svg, { Line } from 'react-native-svg';
 import { COLORS } from '../const/colors';
@@ -27,7 +28,7 @@ export const PerspectiveGrid: React.FC<PerspectiveGridProps> = ({
       offsetY.value = withRepeat(
         withTiming(40, { duration: 4000, easing: Easing.linear }),
         -1,
-        false
+        false,
       );
     }
   }, [animated, offsetY]);
@@ -57,7 +58,7 @@ export const PerspectiveGrid: React.FC<PerspectiveGridProps> = ({
         stroke={COLORS.gridLines}
         strokeWidth={1}
         opacity={opacity}
-      />
+      />,
     );
   }
 
@@ -65,7 +66,7 @@ export const PerspectiveGrid: React.FC<PerspectiveGridProps> = ({
   const horizontalLines = [];
   for (let i = 0; i <= numHorizontalLines; i++) {
     const ratio = i / numHorizontalLines;
-    const y = horizonY + (height - horizonY) * Math.pow(ratio, 1.5);
+    const y = horizonY + (height - horizonY) * ratio ** 1.5;
     const perspectiveScale = 1 - (1 - ratio) * 0.9;
     const leftX = vanishingPointX - vanishingPointX * perspectiveScale;
     const rightX = vanishingPointX + vanishingPointX * perspectiveScale;
@@ -79,7 +80,7 @@ export const PerspectiveGrid: React.FC<PerspectiveGridProps> = ({
         stroke={COLORS.gridLines}
         strokeWidth={1}
         opacity={opacity * ratio}
-      />
+      />,
     );
   }
 

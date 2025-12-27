@@ -14,9 +14,5 @@ export const firebaseWebConfig = {
 
 // Check if web config is properly set up
 export function isFirebaseWebConfigured(): boolean {
-  return !!(
-    firebaseWebConfig.apiKey &&
-    firebaseWebConfig.projectId &&
-    firebaseWebConfig.appId
-  );
+  return !!(firebaseWebConfig.apiKey && firebaseWebConfig.projectId && firebaseWebConfig.appId);
 }

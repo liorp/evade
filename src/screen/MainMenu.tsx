@@ -1,12 +1,13 @@
-import React, { useEffect, useCallback } from 'react';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type React from 'react';
+import { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTranslation } from 'react-i18next';
-import { COLORS } from '../const/colors';
 import { audioManager } from '../audio/audioManager';
+import { COLORS } from '../const/colors';
 import { useSettingsStore } from '../state/settingsStore';
-import { SynthwaveBackground, ChromeText, GlassButton } from '../ui';
+import { ChromeText, GlassButton, SynthwaveBackground } from '../ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -33,7 +34,7 @@ export const MainMenuScreen: React.FC<MainMenuProps> = ({ navigation }) => {
       }
     };
     initAudio();
-  }, []);
+  }, [musicEnabled]);
 
   useEffect(() => {
     audioManager.setMusicEnabled(musicEnabled);

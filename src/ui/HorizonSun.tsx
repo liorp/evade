@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import Svg, { Ellipse, Rect, Defs, LinearGradient, Stop, ClipPath } from 'react-native-svg';
+import type React from 'react';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import Svg, { ClipPath, Defs, Ellipse, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { COLORS, GRADIENTS } from '../const/colors';
 
 interface HorizonSunProps {
@@ -8,10 +8,7 @@ interface HorizonSunProps {
   size?: number;
 }
 
-export const HorizonSun: React.FC<HorizonSunProps> = ({
-  position = 0.4,
-  size = 200,
-}) => {
+export const HorizonSun: React.FC<HorizonSunProps> = ({ position = 0.4, size = 200 }) => {
   const { width, height } = useWindowDimensions();
   const sunY = height * position;
   const bands = 8;

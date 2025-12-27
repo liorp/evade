@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { StyleSheet, View, Text, Pressable, Modal } from 'react-native';
-import { webAdEventBus } from './webAds';
-import { WEB_AD_CONFIG } from './constants';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '../const/colors';
+import { WEB_AD_CONFIG } from './constants';
+import { webAdEventBus } from './webAds';
 
 type AdType = 'interstitial' | 'rewarded' | null;
 
@@ -14,22 +15,25 @@ export const WebAdModal: React.FC = () => {
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const adContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const handleClose = useCallback((grantReward: boolean = false) => {
-    if (countdownRef.current) {
-      clearInterval(countdownRef.current);
-      countdownRef.current = null;
-    }
+  const handleClose = useCallback(
+    (grantReward: boolean = false) => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
 
-    if (grantReward && adType === 'rewarded') {
-      webAdEventBus.emit('rewardEarned');
-    }
-    webAdEventBus.emit('adClosed');
+      if (grantReward && adType === 'rewarded') {
+        webAdEventBus.emit('rewardEarned');
+      }
+      webAdEventBus.emit('adClosed');
 
-    setVisible(false);
-    setAdType(null);
-    setCountdown(0);
-    setCanClose(false);
-  }, [adType]);
+      setVisible(false);
+      setAdType(null);
+      setCountdown(0);
+      setCanClose(false);
+    },
+    [adType],
+  );
 
   const loadAdSenseAd = useCallback(() => {
     // Check if AdSense is available and load ad
@@ -145,9 +149,7 @@ export const WebAdModal: React.FC = () => {
             <Text style={styles.headerText}>
               {adType === 'rewarded' ? 'Watch to earn reward' : 'Advertisement'}
             </Text>
-            {countdown > 0 && (
-              <Text style={styles.countdown}>{countdown}s</Text>
-            )}
+            {countdown > 0 && <Text style={styles.countdown}>{countdown}s</Text>}
           </View>
 
           {/* Ad container */}
@@ -174,24 +176,14 @@ export const WebAdModal: React.FC = () => {
             {adType === 'rewarded' ? (
               <>
                 {canClose ? (
-                  <Pressable
-                    style={styles.rewardButton}
-                    onPress={() => handleClose(true)}
-                  >
+                  <Pressable style={styles.rewardButton} onPress={() => handleClose(true)}>
                     <Text style={styles.rewardButtonText}>Claim Reward</Text>
                   </Pressable>
                 ) : (
-                  <Text style={styles.waitText}>
-                    Wait {countdown}s to earn reward...
-                  </Text>
+                  <Text style={styles.waitText}>Wait {countdown}s to earn reward...</Text>
                 )}
-                <Pressable
-                  style={styles.skipButton}
-                  onPress={() => handleClose(false)}
-                >
-                  <Text style={styles.skipButtonText}>
-                    Skip (no reward)
-                  </Text>
+                <Pressable style={styles.skipButton} onPress={() => handleClose(false)}>
+                  <Text style={styles.skipButtonText}>Skip (no reward)</Text>
                 </Pressable>
               </>
             ) : (

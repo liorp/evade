@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface PurchaseState {
   adsRemoved: boolean;
@@ -22,6 +22,6 @@ export const usePurchaseStore = create<PurchaseState>()(
     {
       name: 'evade-purchases',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );

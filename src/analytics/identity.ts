@@ -28,7 +28,7 @@ export async function getOrCreateUserId(): Promise<string> {
     await AsyncStorage.setItem(STORAGE_KEY, newId);
     cachedUserId = newId;
     return newId;
-  } catch (error) {
+  } catch (_error) {
     const fallbackId = generateUUID();
     cachedUserId = fallbackId;
     return fallbackId;

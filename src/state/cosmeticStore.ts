@@ -1,14 +1,14 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  PlayerColorId,
-  PlayerShape,
-  PlayerTrail,
-  PlayerGlow,
-  EnemyTheme,
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type {
   BackgroundTheme,
   CosmeticCategory,
+  EnemyTheme,
+  PlayerColorId,
+  PlayerGlow,
+  PlayerShape,
+  PlayerTrail,
 } from '../cosmetics/constants';
 
 interface EquippedCosmetics {
@@ -88,7 +88,9 @@ export const useCosmeticStore = create<CosmeticState>()(
               break;
             case 'backgroundTheme':
               if (!state.ownedBackgroundThemes.includes(id as BackgroundTheme)) {
-                return { ownedBackgroundThemes: [...state.ownedBackgroundThemes, id as BackgroundTheme] };
+                return {
+                  ownedBackgroundThemes: [...state.ownedBackgroundThemes, id as BackgroundTheme],
+                };
               }
               break;
           }
@@ -126,6 +128,6 @@ export const useCosmeticStore = create<CosmeticState>()(
     {
       name: 'evade-cosmetics',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );

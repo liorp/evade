@@ -1,5 +1,5 @@
 import { GAME } from '../constants';
-import { Enemy, Position } from '../types';
+import type { Enemy, Position } from '../types';
 
 function degreesToRadians(degrees: number): number {
   return degrees * (Math.PI / 180);
@@ -14,7 +14,7 @@ function normalizeAngle(angle: number): number {
 export function updateEnemyJitter(
   enemy: Enemy,
   currentTime: number,
-  jitterIntensity: number
+  jitterIntensity: number,
 ): Enemy {
   if (currentTime - enemy.lastJitterUpdate >= GAME.JITTER_UPDATE_INTERVAL) {
     const jitterRange = degreesToRadians(jitterIntensity);
@@ -32,7 +32,7 @@ export function moveEnemy(
   enemy: Enemy,
   playerPosition: Position,
   deltaTime: number,
-  speed: number
+  speed: number,
 ): Enemy {
   const dx = playerPosition.x - enemy.position.x;
   const dy = playerPosition.y - enemy.position.y;
@@ -49,11 +49,7 @@ export function moveEnemy(
   };
 }
 
-export function isOffscreen(
-  enemy: Enemy,
-  screenWidth: number,
-  screenHeight: number
-): boolean {
+export function isOffscreen(enemy: Enemy, screenWidth: number, screenHeight: number): boolean {
   const buffer = GAME.OFFSCREEN_BUFFER;
   return (
     enemy.position.x < -buffer ||
@@ -79,7 +75,7 @@ export function updateEnemies(
   currentTime: number,
   jitterIntensity: number,
   screenWidth: number,
-  screenHeight: number
+  screenHeight: number,
 ): UpdateEnemiesResult {
   const moved = enemies.map((enemy) => {
     const withJitter = updateEnemyJitter(enemy, currentTime, jitterIntensity);
@@ -88,8 +84,7 @@ export function updateEnemies(
   });
 
   const remaining = moved.filter(
-    (enemy) =>
-      !isOffscreen(enemy, screenWidth, screenHeight) && !isExpired(enemy, currentTime)
+    (enemy) => !isOffscreen(enemy, screenWidth, screenHeight) && !isExpired(enemy, currentTime),
   );
 
   return {

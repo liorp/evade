@@ -1,10 +1,10 @@
-import React from 'react';
+import type React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { COLORS } from '../const/colors';
-import { StarField } from './StarField';
-import { PerspectiveGrid } from './PerspectiveGrid';
-import { HorizonSun } from './HorizonSun';
 import { GeometricHalos } from './GeometricHalos';
+import { HorizonSun } from './HorizonSun';
+import { PerspectiveGrid } from './PerspectiveGrid';
+import { StarField } from './StarField';
 
 interface SynthwaveBackgroundProps {
   showStars?: boolean;

@@ -1,13 +1,14 @@
-import React, { useEffect, useMemo } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import { COLORS } from '../const/colors';
+import type React from 'react';
+import { useEffect, useMemo } from 'react';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
-  useSharedValue,
+  Easing,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  Easing,
 } from 'react-native-reanimated';
+import { COLORS } from '../const/colors';
 
 interface Star {
   id: number;
@@ -28,9 +29,9 @@ const StarParticle: React.FC<{ star: Star }> = ({ star }) => {
         easing: Easing.inOut(Easing.ease),
       }),
       -1,
-      true
+      true,
     );
-  }, []);
+  }, [opacity, star.duration, star.opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

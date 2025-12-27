@@ -1,22 +1,22 @@
 import { initializeFirebaseAnalytics, logEvent } from './firebase';
-import {
-  AppOpenedParams,
-  SessionEndedParams,
-  GameStartedParams,
-  GameEndedParams,
-  ContinueUsedParams,
-  BoosterCollectedParams,
-  AdShownParams,
+import type {
   AdCompletedParams,
   AdFailedParams,
-  IapInitiatedParams,
+  AdShownParams,
+  AppOpenedParams,
+  BoosterCollectedParams,
+  ContinueUsedParams,
+  GameEndedParams,
+  GameStartedParams,
   IapCompletedParams,
   IapFailedParams,
-  ShardsChangedParams,
-  ShopCategoryViewedParams,
+  IapInitiatedParams,
   ItemPreviewedParams,
   ItemPurchasedParams,
+  SessionEndedParams,
   SettingChangedParams,
+  ShardsChangedParams,
+  ShopCategoryViewedParams,
 } from './types';
 
 export async function initAnalytics(): Promise<void> {

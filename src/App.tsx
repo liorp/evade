@@ -1,24 +1,24 @@
 import './i18n';
-import React, { useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import Constants from 'expo-constants';
-import { adManager } from './ads/adManager';
-import { WebAdModal } from './ads/WebAdModal';
-import { isWeb } from './utils/environment';
-import { usePurchaseStore } from './state/purchaseStore';
-import { useAdStore } from './state/adStore';
-import { iapManager } from './iap/iapManager';
-import { initAnalytics, trackAppOpened } from './analytics';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Constants from 'expo-constants';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { adManager } from './ads/adManager';
+import { WebAdModal } from './ads/WebAdModal';
+import { initAnalytics, trackAppOpened } from './analytics';
+import { COLORS } from './const/colors';
+import { iapManager } from './iap/iapManager';
+import { HighScoresScreen } from './screen/HighScores';
+import { InstructionsScreen } from './screen/Instructions';
 import { MainMenuScreen } from './screen/MainMenu';
 import { PlayScreen } from './screen/Play';
 import { SettingsScreen } from './screen/Settings';
-import { HighScoresScreen } from './screen/HighScores';
-import { InstructionsScreen } from './screen/Instructions';
 import { ShopScreen } from './screen/Shop';
-import { COLORS } from './const/colors';
+import { useAdStore } from './state/adStore';
+import { usePurchaseStore } from './state/purchaseStore';
+import { isWeb } from './utils/environment';
 
 type RootStackParamList = {
   MainMenu: undefined;

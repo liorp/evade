@@ -1,8 +1,12 @@
 import { Platform } from 'react-native';
+import { trackIapCompleted, trackIapFailed, trackIapInitiated } from '../analytics';
+import type {
+  ProductOrSubscription,
+  Purchase,
+  RequestPurchasePropsByPlatforms,
+} from '../mocks/expoIap';
 import { isExpoGo, isWeb } from '../utils/environment';
 import { IAP_PRODUCTS } from './constants';
-import { trackIapInitiated, trackIapCompleted, trackIapFailed } from '../analytics';
-import type { ProductOrSubscription, RequestPurchasePropsByPlatforms, Purchase } from '../mocks/expoIap';
 
 // Conditionally import real or mock IAP (web uses no-op implementation)
 const getIAPModule = () => {

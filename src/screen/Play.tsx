@@ -1,38 +1,35 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  trackGameStarted,
-  trackGameEnded,
-  trackContinueUsed,
-  trackBoosterCollected,
-} from '../analytics';
-import { StyleSheet, View, Text, Dimensions, ViewStyle, TextStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
-import Animated, { useSharedValue, runOnJS } from 'react-native-reanimated';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GameEngine } from '../game/GameEngine';
-import { Enemy as EnemyType, Booster as BoosterType, ActiveEffects } from '../game/types';
-import { Player } from '../entity/Player';
-import { Enemy } from '../entity/Enemy';
-import { Booster } from '../entity/Booster';
-import { COLORS } from '../const/colors';
-import { GAME } from '../game/constants';
-import { useSettingsStore } from '../state/settingsStore';
-import { useHighscoreStore } from '../state/highscoreStore';
-import { audioManager } from '../audio/audioManager';
-import { ContinueModal } from '../game/ContinueModal';
-import { GameOverModal } from '../game/GameOverModal';
-import { useAdStore } from '../state/adStore';
+import { Dimensions, StyleSheet, Text, type TextStyle, View, type ViewStyle } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { runOnJS, useSharedValue } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { adManager } from '../ads/adManager';
 import { AD_CONFIG } from '../ads/constants';
-import { useCosmeticStore } from '../state/cosmeticStore';
-import { useShardStore, calculateShardsFromScore } from '../state/shardStore';
+import {
+  trackBoosterCollected,
+  trackContinueUsed,
+  trackGameEnded,
+  trackGameStarted,
+} from '../analytics';
+import { audioManager } from '../audio/audioManager';
+import { COLORS } from '../const/colors';
+import { Booster } from '../entity/Booster';
+import { Enemy } from '../entity/Enemy';
 import { GameBackground } from '../entity/GameBackground';
+import { Player } from '../entity/Player';
+import { ContinueModal } from '../game/ContinueModal';
+import { GAME } from '../game/constants';
+import { GameEngine } from '../game/GameEngine';
+import { GameOverModal } from '../game/GameOverModal';
+import type { ActiveEffects, Booster as BoosterType, Enemy as EnemyType } from '../game/types';
+import { useAdStore } from '../state/adStore';
+import { useCosmeticStore } from '../state/cosmeticStore';
+import { useHighscoreStore } from '../state/highscoreStore';
+import { useSettingsStore } from '../state/settingsStore';
+import { calculateShardsFromScore, useShardStore } from '../state/shardStore';
 import { ChromeText } from '../ui';
 
 type RootStackParamList = {
@@ -65,20 +62,20 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const [hasStarted, setHasStarted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [showContinueModal, setShowContinueModal] = useState(false);
-  const [pendingGameOver, setPendingGameOver] = useState(false);
+  const [_pendingGameOver, setPendingGameOver] = useState(false);
   const [enemies, setEnemies] = useState<EnemyType[]>([]);
   const [boosters, setBoosters] = useState<BoosterType[]>([]);
   const [activeEffects, setActiveEffects] = useState<ActiveEffects>({
     shield: { active: false, endTime: 0 },
     multiplier: { active: false, endTime: 0, value: 1 },
   });
-  const [screenSize, setScreenSize] = useState(Dimensions.get('window'));
+  const [screenSize, _setScreenSize] = useState(Dimensions.get('window'));
   const [currentTime, setCurrentTime] = useState(performance.now());
   const [dodgeFlashTrigger, setDodgeFlashTrigger] = useState(0);
   const [passedBest, setPassedBest] = useState(false);
   const [shardsEarned, setShardsEarned] = useState(0);
-  const [boostersCollectedCount, setBoostersCollectedCount] = useState(0);
-  const [didUseContinue, setDidUseContinue] = useState(false);
+  const [_boostersCollectedCount, setBoostersCollectedCount] = useState(0);
+  const [_didUseContinue, setDidUseContinue] = useState(false);
   const gameStartTimeRef = useRef<number>(0);
   const boostersCollectedRef = useRef(0);
   const didUseContinueRef = useRef(false);
@@ -89,6 +86,39 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const gameEngine = useRef<GameEngine | null>(null);
   const newEnemyIds = useRef<Set<string>>(new Set());
   const newBoosterIds = useRef<Set<string>>(new Set());
+
+  const handleActualGameOver = useCallback(async () => {
+    setIsGameOver(true);
+    const finalScore = gameEngine.current?.getState().score ?? 0;
+    if (finalScore > 0) {
+      addScore(finalScore);
+    }
+
+    // Track game ended
+    trackGameEnded({
+      score: finalScore,
+      duration_seconds: Math.floor((Date.now() - gameStartTimeRef.current) / 1000),
+      boosters_collected: boostersCollectedRef.current,
+      continue_used: didUseContinueRef.current,
+    });
+
+    // Award shards based on score
+    const shards = calculateShardsFromScore(finalScore);
+    setShardsEarned(shards);
+    if (shards > 0) {
+      addShards(shards, 'score');
+    }
+
+    if (sfxEnabled) {
+      audioManager.playGameOver();
+    }
+
+    // Show interstitial if needed
+    if (shouldShowInterstitial()) {
+      await adManager.showInterstitial('game_over');
+      markAdShown();
+    }
+  }, [addScore, addShards, sfxEnabled, shouldShowInterstitial, markAdShown]);
 
   useEffect(() => {
     const engine = new GameEngine(screenSize.width, screenSize.height, handedness);
@@ -162,7 +192,17 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       clearInterval(interval);
       engine.stop();
     };
-  }, []);
+  }, [
+    boosters.find,
+    canUseContinue,
+    enemies.find,
+    handedness,
+    handleActualGameOver,
+    incrementDeathCount,
+    screenSize.height,
+    screenSize.width,
+    sfxEnabled,
+  ]);
 
   useEffect(() => {
     if (gameEngine.current) {
@@ -201,39 +241,6 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const updatePlayerPosition = useCallback((x: number, y: number) => {
     gameEngine.current?.setPlayerPosition(x, y);
   }, []);
-
-  const handleActualGameOver = useCallback(async () => {
-    setIsGameOver(true);
-    const finalScore = gameEngine.current?.getState().score ?? 0;
-    if (finalScore > 0) {
-      addScore(finalScore);
-    }
-
-    // Track game ended
-    trackGameEnded({
-      score: finalScore,
-      duration_seconds: Math.floor((Date.now() - gameStartTimeRef.current) / 1000),
-      boosters_collected: boostersCollectedRef.current,
-      continue_used: didUseContinueRef.current,
-    });
-
-    // Award shards based on score
-    const shards = calculateShardsFromScore(finalScore);
-    setShardsEarned(shards);
-    if (shards > 0) {
-      addShards(shards, 'score');
-    }
-
-    if (sfxEnabled) {
-      audioManager.playGameOver();
-    }
-
-    // Show interstitial if needed
-    if (shouldShowInterstitial()) {
-      await adManager.showInterstitial('game_over');
-      markAdShown();
-    }
-  }, [addScore, addShards, sfxEnabled, shouldShowInterstitial, markAdShown]);
 
   const handleContinue = useCallback(() => {
     setShowContinueModal(false);

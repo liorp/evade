@@ -35,17 +35,19 @@ export const useAdStore = create<AdState>()((set, get) => ({
 
   incrementDeathCount: () => set((state) => ({ deathCount: state.deathCount + 1 })),
 
-  resetRunState: () => set({
-    hasUsedContinue: false,
-    watchedRewardedThisRun: false,
-  }),
+  resetRunState: () =>
+    set({
+      hasUsedContinue: false,
+      watchedRewardedThisRun: false,
+    }),
 
-  resetSessionState: () => set({
-    deathCount: 0,
-    lastAdDeathCount: 0,
-    hasUsedContinue: false,
-    watchedRewardedThisRun: false,
-  }),
+  resetSessionState: () =>
+    set({
+      deathCount: 0,
+      lastAdDeathCount: 0,
+      hasUsedContinue: false,
+      watchedRewardedThisRun: false,
+    }),
 
   markAdShown: () => set((state) => ({ lastAdDeathCount: state.deathCount })),
 
@@ -64,7 +66,7 @@ export const useAdStore = create<AdState>()((set, get) => ({
     // Don't show on first death
     if (state.deathCount < 2) return false;
     // Show every 3 deaths since last ad
-    return (state.deathCount - state.lastAdDeathCount) >= 3;
+    return state.deathCount - state.lastAdDeathCount >= 3;
   },
 
   canUseContinue: () => {

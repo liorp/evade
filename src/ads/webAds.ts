@@ -29,13 +29,18 @@ class WebAdEventBus {
     this.listeners.set(event, [...existing, callback]);
     return () => {
       const callbacks = this.listeners.get(event) || [];
-      this.listeners.set(event, callbacks.filter((cb) => cb !== callback));
+      this.listeners.set(
+        event,
+        callbacks.filter((cb) => cb !== callback),
+      );
     };
   }
 
   emit(event: WebAdEventType, data?: unknown): void {
     const callbacks = this.listeners.get(event) || [];
-    callbacks.forEach((cb) => cb(data));
+    callbacks.forEach((cb) => {
+      cb(data);
+    });
   }
 }
 
@@ -58,13 +63,18 @@ class WebInterstitialAd {
     this.listeners.set(event, [...existing, callback]);
     return () => {
       const callbacks = this.listeners.get(event) || [];
-      this.listeners.set(event, callbacks.filter((cb) => cb !== callback));
+      this.listeners.set(
+        event,
+        callbacks.filter((cb) => cb !== callback),
+      );
     };
   }
 
   private emit(event: string, error?: Error): void {
     const callbacks = this.listeners.get(event) || [];
-    callbacks.forEach((cb) => cb(error));
+    callbacks.forEach((cb) => {
+      cb(error);
+    });
   }
 
   load(): void {
@@ -106,7 +116,10 @@ class WebRewardedAd {
     this.listeners.set(event, [...existing, callback]);
     return () => {
       const callbacks = this.listeners.get(event) || [];
-      this.listeners.set(event, callbacks.filter((cb) => cb !== callback));
+      this.listeners.set(
+        event,
+        callbacks.filter((cb) => cb !== callback),
+      );
     };
   }
 
