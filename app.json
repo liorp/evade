@@ -35,7 +35,8 @@
           "iosAppId": "ca-app-pub-4529248472834919~1152044884"
         }
       ],
-      "expo-iap"
+      "expo-iap",
+      "@react-native-firebase/app"
     ]
   }
 }
