@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.liorpolak.evade",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./src/firebase/GoogleService-Info.plist"
     },
     "android": {
       "package": "com.liorpolak.evade",
@@ -25,7 +25,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./src/firebase/google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
