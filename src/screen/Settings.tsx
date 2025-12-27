@@ -1,15 +1,18 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { trackSettingChanged } from '../analytics';
 import { COLORS } from '../const/colors';
 import { IAP_PRICES } from '../iap/constants';
 import { iapManager } from '../iap/iapManager';
 import { useAdStore } from '../state/adStore';
+import { useCosmeticStore } from '../state/cosmeticStore';
+import { useHighscoreStore } from '../state/highscoreStore';
 import { usePurchaseStore } from '../state/purchaseStore';
 import { useSettingsStore } from '../state/settingsStore';
+import { useShardStore } from '../state/shardStore';
 import { ChromeText, GlassButton, NeonToggle, SynthwaveBackground } from '../ui';
 
 type RootStackParamList = {
@@ -24,10 +27,22 @@ interface SettingsProps {
 
 export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
   const { t } = useTranslation();
-  const { handedness, musicEnabled, sfxEnabled, setHandedness, setMusicEnabled, setSfxEnabled } =
-    useSettingsStore();
+  const {
+    handedness,
+    musicEnabled,
+    sfxEnabled,
+    hapticsEnabled,
+    setHandedness,
+    setMusicEnabled,
+    setSfxEnabled,
+    setHapticsEnabled,
+    reset: resetSettings,
+  } = useSettingsStore();
   const { adsRemoved, setAdsRemoved } = usePurchaseStore();
   const { setAdsRemoved: setAdStoreAdsRemoved } = useAdStore();
+  const { reset: resetCosmetics } = useCosmeticStore();
+  const { clearScores } = useHighscoreStore();
+  const { reset: resetShards } = useShardStore();
 
   const handlePurchaseRemoveAds = async () => {
     const success = await iapManager.purchaseRemoveAds();
@@ -63,6 +78,15 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
     setSfxEnabled(value);
   };
 
+  const handleHapticsChange = (value: boolean) => {
+    trackSettingChanged({
+      setting: 'haptics_enabled',
+      old_value: String(hapticsEnabled),
+      new_value: String(value),
+    });
+    setHapticsEnabled(value);
+  };
+
   const handleHandednessChange = (value: 'left' | 'right') => {
     trackSettingChanged({
       setting: 'handedness',
@@ -72,16 +96,25 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
     setHandedness(value);
   };
 
+  const handleResetAll = () => {
+    Alert.alert(t('settings.resetConfirmTitle'), t('settings.resetConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.resetAll'),
+        style: 'destructive',
+        onPress: () => {
+          resetSettings();
+          resetCosmetics();
+          clearScores();
+          resetShards();
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.container}>
-      <SynthwaveBackground
-        showStars={false}
-        showGrid
-        showSun={false}
-        showHalos={false}
-        gridOpacity={0.3}
-        gridAnimated={false}
-      />
+      <SynthwaveBackground showStars={false} showSun={false} showHalos={false} />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <GlassButton
@@ -109,6 +142,10 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>{t('settings.soundEffects')}</Text>
             <NeonToggle value={sfxEnabled} onValueChange={handleSfxChange} />
+          </View>
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>{t('settings.vibration')}</Text>
+            <NeonToggle value={hapticsEnabled} onValueChange={handleHapticsChange} />
           </View>
 
           {/* Controls Section */}
@@ -169,6 +206,11 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
               variant="secondary"
             />
           </View>
+
+          {/* Reset Section */}
+          <View style={styles.resetButtonContainer}>
+            <GlassButton title={t('settings.resetAll')} onPress={handleResetAll} variant="danger" />
+          </View>
         </View>
       </SafeAreaView>
     </View>
@@ -189,11 +231,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    overflow: 'visible',
   },
   backButton: {
     minWidth: 80,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
   headerSpacer: {
     width: 80,
@@ -273,6 +316,10 @@ const styles = StyleSheet.create({
   },
   purchaseButtonContainer: {
     marginTop: 16,
+    alignItems: 'center',
+  },
+  resetButtonContainer: {
+    marginTop: 48,
     alignItems: 'center',
   },
 });

@@ -1,5 +1,5 @@
 import { GAME } from './constants';
-import { checkCloseDodges, checkCollision } from './systems/collision';
+import { checkCollision } from './systems/collision';
 import { getDifficultyParams, getSpawnZone } from './systems/difficulty';
 import { updateEnemies } from './systems/movement';
 import {
@@ -11,14 +11,15 @@ import {
   shouldSpawn,
   shouldSpawnBooster,
 } from './systems/spawn';
-import type { Booster, GameState, Handedness } from './types';
+import type { Booster, Enemy, GameState, Handedness, Position } from './types';
 
-export type GameEventType =
-  | 'gameOver'
-  | 'scoreUpdate'
-  | 'stateChange'
-  | 'boosterCollected'
-  | 'closeDodge';
+export interface GameOverData {
+  score: number;
+  collisionPosition?: Position;
+  enemySpeedTier?: Enemy['speedTier'];
+}
+
+export type GameEventType = 'gameOver' | 'scoreUpdate' | 'stateChange' | 'boosterCollected';
 export type GameEventCallback = (event: GameEventType, data?: unknown) => void;
 
 export class GameEngine {
@@ -121,7 +122,8 @@ export class GameEngine {
     if (!this.state.isRunning || this.state.isGameOver) return;
     this.state.isGameOver = true;
     this.state.isRunning = false;
-    this.emit('gameOver', { score: this.state.score });
+    const gameOverData: GameOverData = { score: this.state.score };
+    this.emit('gameOver', gameOverData);
   }
 
   continueGame(shieldDuration: number): void {
@@ -173,7 +175,8 @@ export class GameEngine {
     this.updateActiveEffects(timestamp);
 
     // 1. Check collision first (but shield protects)
-    if (checkCollision(this.state.playerPosition, this.state.enemies)) {
+    const collidedEnemy = checkCollision(this.state.playerPosition, this.state.enemies);
+    if (collidedEnemy) {
       if (this.state.activeEffects.shield.active) {
         // Shield absorbs hit - clear all nearby enemies
         this.state.enemies = this.state.enemies.filter(
@@ -190,18 +193,14 @@ export class GameEngine {
       } else {
         this.state.isGameOver = true;
         this.state.isRunning = false;
-        this.emit('gameOver', { score: this.state.score });
+        const gameOverData: GameOverData = {
+          score: this.state.score,
+          collisionPosition: collidedEnemy.position,
+          enemySpeedTier: collidedEnemy.speedTier,
+        };
+        this.emit('gameOver', gameOverData);
         return;
       }
-    }
-
-    // 1.5. Check close dodges (after collision, before boosters)
-    const closeDodgeResult = checkCloseDodges(this.state.playerPosition, this.state.enemies);
-    if (closeDodgeResult.count > 0) {
-      this.state.enemies = closeDodgeResult.enemies;
-      this.state.score += closeDodgeResult.count * GAME.CLOSE_DODGE_POINTS;
-      this.emit('closeDodge', closeDodgeResult.count);
-      this.emit('scoreUpdate', this.state.score);
     }
 
     // 2. Check booster collection

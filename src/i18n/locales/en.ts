@@ -39,6 +39,7 @@ export default {
     audio: 'Audio',
     backgroundMusic: 'Background Music',
     soundEffects: 'Sound Effects',
+    vibration: 'Vibration',
     controls: 'Controls',
     handedness: 'Handedness',
     left: 'Left',
@@ -48,6 +49,10 @@ export default {
     removeAds: 'Remove Ads',
     adsRemoved: 'Ads Removed',
     restorePurchases: 'Restore Purchases',
+    resetAll: 'Reset All',
+    resetConfirmTitle: 'Reset All Data',
+    resetConfirmMessage:
+      'This will reset all settings, high scores, cosmetics, and shards to their default values. Purchases will not be affected. This cannot be undone.',
   },
 
   // High Scores Screen

@@ -1,4 +1,5 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as Haptics from 'expo-haptics';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,13 +17,15 @@ import {
 } from '../analytics';
 import { audioManager } from '../audio/audioManager';
 import { COLORS } from '../const/colors';
+import { ENEMY_THEMES } from '../cosmetics/constants';
 import { Booster } from '../entity/Booster';
 import { Enemy } from '../entity/Enemy';
+import { Explosion } from '../entity/Explosion';
 import { GameBackground } from '../entity/GameBackground';
 import { Player } from '../entity/Player';
 import { ContinueModal } from '../game/ContinueModal';
 import { GAME } from '../game/constants';
-import { GameEngine } from '../game/GameEngine';
+import { GameEngine, type GameOverData } from '../game/GameEngine';
 import { GameOverModal } from '../game/GameOverModal';
 import type { ActiveEffects, Booster as BoosterType, Enemy as EnemyType } from '../game/types';
 import { useAdStore } from '../state/adStore';
@@ -44,7 +47,7 @@ interface PlayScreenProps {
 
 export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
-  const { handedness, sfxEnabled } = useSettingsStore();
+  const { handedness, sfxEnabled, hapticsEnabled } = useSettingsStore();
   const { addScore, getBestScore } = useHighscoreStore();
   const {
     incrementDeathCount,
@@ -71,11 +74,16 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   });
   const [screenSize, _setScreenSize] = useState(Dimensions.get('window'));
   const [currentTime, setCurrentTime] = useState(performance.now());
-  const [dodgeFlashTrigger, setDodgeFlashTrigger] = useState(0);
   const [passedBest, setPassedBest] = useState(false);
   const [shardsEarned, setShardsEarned] = useState(0);
   const [_boostersCollectedCount, setBoostersCollectedCount] = useState(0);
   const [_didUseContinue, setDidUseContinue] = useState(false);
+  const [explosion, setExplosion] = useState<{
+    id: string;
+    x: number;
+    y: number;
+    color: string;
+  } | null>(null);
   const gameStartTimeRef = useRef<number>(0);
   const boostersCollectedRef = useRef(0);
   const didUseContinueRef = useRef(false);
@@ -109,16 +117,12 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       addShards(shards, 'score');
     }
 
-    if (sfxEnabled) {
-      audioManager.playGameOver();
-    }
-
     // Show interstitial if needed
     if (shouldShowInterstitial()) {
       await adManager.showInterstitial('game_over');
       markAdShown();
     }
-  }, [addScore, addShards, sfxEnabled, shouldShowInterstitial, markAdShown]);
+  }, [addScore, addShards, shouldShowInterstitial, markAdShown]);
 
   useEffect(() => {
     const engine = new GameEngine(screenSize.width, screenSize.height, handedness);
@@ -126,7 +130,27 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
 
     engine.setEventCallback((event, data) => {
       if (event === 'gameOver') {
+        const gameOverData = data as GameOverData;
         incrementDeathCount();
+
+        // Play audio and haptics immediately on collision
+        if (sfxEnabled) {
+          audioManager.playGameOver();
+        }
+        if (hapticsEnabled) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        }
+
+        // Show explosion if collision data exists (not finger lift)
+        if (gameOverData.collisionPosition && gameOverData.enemySpeedTier) {
+          const themeData = ENEMY_THEMES[equipped.enemyTheme];
+          setExplosion({
+            id: Date.now().toString(),
+            x: gameOverData.collisionPosition.x,
+            y: gameOverData.collisionPosition.y,
+            color: themeData.colors.base,
+          });
+        }
 
         // Check if player can use continue
         if (canUseContinue() && adManager.isRewardedReady()) {
@@ -144,11 +168,6 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         setBoostersCollectedCount((prev) => prev + 1);
         boostersCollectedRef.current += 1;
         trackBoosterCollected({ booster_type: data as 'shield' | 'multiplier' | 'plus' });
-      } else if (event === 'closeDodge') {
-        setDodgeFlashTrigger((prev) => prev + 1);
-        if (sfxEnabled) {
-          audioManager.playDodge();
-        }
       }
     });
 
@@ -196,8 +215,10 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     boosters.find,
     canUseContinue,
     enemies.find,
+    equipped.enemyTheme,
     handedness,
     handleActualGameOver,
+    hapticsEnabled,
     incrementDeathCount,
     screenSize.height,
     screenSize.width,
@@ -293,11 +314,11 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
       shield: { active: false, endTime: 0 },
       multiplier: { active: false, endTime: 0, value: 1 },
     });
-    setDodgeFlashTrigger(0);
     setPassedBest(false);
     setShardsEarned(0);
     setBoostersCollectedCount(0);
     setDidUseContinue(false);
+    setExplosion(null);
     boostersCollectedRef.current = 0;
     didUseContinueRef.current = false;
     newEnemyIds.current.clear();
@@ -315,93 +336,110 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     });
   };
 
-  return (
-    <GestureHandlerRootView style={styles.container}>
-      <GestureDetector gesture={gesture}>
-        <Animated.View style={styles.gameArea}>
-          {/* Themed Background */}
-          <GameBackground theme={equipped.backgroundTheme} />
+  const showModal = isGameOver || showContinueModal;
 
-          {/* Score and Active Effects */}
-          <SafeAreaView style={styles.scoreContainer}>
-            <ChromeText size={28} color="gold" glowPulse={false}>
-              {score.toString()}
-            </ChromeText>
-            {bestScore > 0 && hasStarted && !isGameOver && (
-              <Text style={[styles.bestScore, passedBest && styles.bestScorePassed]}>
-                {passedBest ? 'NEW BEST!' : `Best: ${bestScore}`}
-              </Text>
-            )}
-            <View style={styles.effectsContainer}>
-              {activeEffects.shield.active && (
-                <View style={styles.shieldBadge}>
-                  <Text style={styles.shieldIcon}>{'\u25CB'}</Text>
-                </View>
-              )}
-              {activeEffects.multiplier.active && (
-                <View style={styles.multiplierBadge}>
-                  <Text style={styles.multiplierIcon}>x{activeEffects.multiplier.value}</Text>
-                </View>
-              )}
+  const gameAreaContent = (
+    <Animated.View style={styles.gameArea} pointerEvents={showModal ? 'none' : 'auto'}>
+      {/* Themed Background */}
+      <GameBackground theme={equipped.backgroundTheme} />
+
+      {/* Score and Active Effects */}
+      <SafeAreaView style={styles.scoreContainer}>
+        <ChromeText size={28} color="gold" glowPulse={false}>
+          {score.toString()}
+        </ChromeText>
+        {bestScore > 0 && hasStarted && !isGameOver && (
+          <Text style={[styles.bestScore, passedBest && styles.bestScorePassed]}>
+            {passedBest ? 'NEW BEST!' : `Best: ${bestScore}`}
+          </Text>
+        )}
+        <View style={styles.effectsContainer}>
+          {activeEffects.shield.active && (
+            <View style={styles.shieldBadge}>
+              <Text style={styles.shieldIcon}>{'\u25CB'}</Text>
             </View>
-          </SafeAreaView>
-
-          {/* Boosters */}
-          {boosters.map((booster) => {
-            const age = currentTime - booster.spawnTime;
-            const ttlPercent = Math.max(0, 1 - age / GAME.BOOSTER_LIFETIME);
-            return (
-              <Booster
-                key={booster.id}
-                x={booster.position.x}
-                y={booster.position.y}
-                type={booster.type}
-                ttlPercent={ttlPercent}
-                isNew={newBoosterIds.current.has(booster.id)}
-              />
-            );
-          })}
-
-          {/* Enemies */}
-          {enemies.map((enemy) => {
-            const age = currentTime - enemy.spawnTime;
-            const ttlPercent = Math.max(0, 1 - age / GAME.ENEMY_MAX_LIFETIME);
-            return (
-              <Enemy
-                key={enemy.id}
-                x={enemy.position.x}
-                y={enemy.position.y}
-                speedTier={enemy.speedTier}
-                ttlPercent={ttlPercent}
-                isNew={newEnemyIds.current.has(enemy.id)}
-                theme={equipped.enemyTheme}
-              />
-            );
-          })}
-
-          {/* Player */}
-          <Player
-            x={playerX}
-            y={playerY}
-            hasShield={activeEffects.shield.active}
-            dodgeFlashTrigger={dodgeFlashTrigger}
-            shape={equipped.playerShape}
-            colorId={equipped.playerColor}
-            trail={equipped.playerTrail}
-            glow={equipped.playerGlow}
-          />
-        </Animated.View>
-      </GestureDetector>
-
-      {/* Start Overlay - only shown before game starts */}
-      {!hasStarted && !isGameOver && (
-        <View style={styles.startOverlay} pointerEvents="none">
-          <ChromeText size={28} color="cyan" glowPulse={true}>
-            {t('play.touchToStart')}
-          </ChromeText>
+          )}
+          {activeEffects.multiplier.active && (
+            <View style={styles.multiplierBadge}>
+              <Text style={styles.multiplierIcon}>x{activeEffects.multiplier.value}</Text>
+            </View>
+          )}
         </View>
-      )}
+      </SafeAreaView>
 
+      {/* Boosters */}
+      {boosters.map((booster) => {
+        const age = currentTime - booster.spawnTime;
+        const ttlPercent = Math.max(0, 1 - age / GAME.BOOSTER_LIFETIME);
+        return (
+          <Booster
+            key={booster.id}
+            x={booster.position.x}
+            y={booster.position.y}
+            type={booster.type}
+            ttlPercent={ttlPercent}
+            isNew={newBoosterIds.current.has(booster.id)}
+          />
+        );
+      })}
+
+      {/* Enemies */}
+      {enemies.map((enemy) => {
+        const age = currentTime - enemy.spawnTime;
+        const ttlPercent = Math.max(0, 1 - age / GAME.ENEMY_MAX_LIFETIME);
+        return (
+          <Enemy
+            key={enemy.id}
+            x={enemy.position.x}
+            y={enemy.position.y}
+            speedTier={enemy.speedTier}
+            ttlPercent={ttlPercent}
+            isNew={newEnemyIds.current.has(enemy.id)}
+            theme={equipped.enemyTheme}
+          />
+        );
+      })}
+
+      {/* Player */}
+      <Player
+        x={playerX}
+        y={playerY}
+        hasShield={activeEffects.shield.active}
+        shape={equipped.playerShape}
+        colorId={equipped.playerColor}
+        trail={equipped.playerTrail}
+        glow={equipped.playerGlow}
+      />
+
+      {/* Explosion */}
+      {explosion && (
+        <Explosion
+          key={explosion.id}
+          x={explosion.x}
+          y={explosion.y}
+          color={explosion.color}
+          onComplete={() => setExplosion(null)}
+        />
+      )}
+    </Animated.View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+        <GestureDetector gesture={gesture}>{gameAreaContent}</GestureDetector>
+
+        {/* Start Overlay - only shown before game starts */}
+        {!hasStarted && !isGameOver && (
+          <View style={styles.startOverlay} pointerEvents="none">
+            <ChromeText size={28} color="cyan" glowPulse={true}>
+              {t('play.touchToStart')}
+            </ChromeText>
+          </View>
+        )}
+      </GestureHandlerRootView>
+
+      {/* Modals outside GestureHandlerRootView for proper touch handling */}
       <ContinueModal
         visible={showContinueModal}
         canContinue={canUseContinue()}
@@ -409,7 +447,6 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         onDecline={handleDeclineContinue}
       />
 
-      {/* Game Over Modal - outside gesture detector for button presses */}
       <GameOverModal
         visible={isGameOver && !showContinueModal}
         score={score}
@@ -418,7 +455,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         onRetry={handleRetry}
         onMenu={handleBackToMenu}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 };
 
@@ -437,6 +474,7 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     zIndex: 10,
+    overflow: 'visible',
   },
   bestScore: {
     fontSize: 14,
@@ -495,5 +533,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 100,
     elevation: 100,
+    overflow: 'visible',
   },
 });

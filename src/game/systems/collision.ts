@@ -7,16 +7,16 @@ function distance(a: Position, b: Position): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-export function checkCollision(playerPosition: Position, enemies: Enemy[]): boolean {
+export function checkCollision(playerPosition: Position, enemies: Enemy[]): Enemy | null {
   const collisionDistance = GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS;
 
   for (const enemy of enemies) {
     if (distance(playerPosition, enemy.position) < collisionDistance) {
-      return true;
+      return enemy;
     }
   }
 
-  return false;
+  return null;
 }
 
 export function checkBoosterCollision(
@@ -32,27 +32,4 @@ export function checkBoosterCollision(
   }
 
   return null;
-}
-
-export interface CloseDodgeResult {
-  count: number;
-  enemies: Enemy[]; // Return mutated enemies with dodgeCounted updated
-}
-
-export function checkCloseDodges(playerPosition: Position, enemies: Enemy[]): CloseDodgeResult {
-  const collisionDistance = GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS;
-  const dodgeDistance = collisionDistance + GAME.CLOSE_DODGE_THRESHOLD;
-  let count = 0;
-
-  for (const enemy of enemies) {
-    const dist = distance(playerPosition, enemy.position);
-
-    // In close dodge zone but not colliding
-    if (dist > collisionDistance && dist < dodgeDistance && !enemy.dodgeCounted) {
-      enemy.dodgeCounted = true;
-      count++;
-    }
-  }
-
-  return { count, enemies };
 }
