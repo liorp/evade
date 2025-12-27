@@ -6,3 +6,4 @@ export { HorizonSun } from './HorizonSun';
 export { GeometricHalos } from './GeometricHalos';
 export { SynthwaveBackground } from './SynthwaveBackground';
 export { NeonToggle } from './NeonToggle';
+export { HexFrame } from './HexFrame';
