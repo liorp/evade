@@ -4,7 +4,7 @@ import { IAP_PRODUCTS } from '../const/iap';
 
 class IAPManager {
   private isInitialized = false;
-  private products: ExpoIAP.Product[] = [];
+  private products: ExpoIAP.ProductOrSubscription[] = [];
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
@@ -26,10 +26,11 @@ class IAPManager {
         IAP_PRODUCTS.SHARDS_500,
         IAP_PRODUCTS.SHARDS_1500,
       ];
-      this.products = await ExpoIAP.fetchProducts({
+      const result = await ExpoIAP.fetchProducts({
         skus: productIds as string[],
-        type: 'inapp',
+        type: 'in-app',
       });
+      this.products = result ?? [];
     } catch (error) {
       console.warn('Failed to load products:', error);
     }
@@ -42,14 +43,12 @@ class IAPManager {
 
     try {
       const sku = IAP_PRODUCTS.REMOVE_ADS as string;
-      await ExpoIAP.requestPurchase({
-        request: Platform.select({
-          ios: { sku },
-          android: { skus: [sku] },
-          default: { sku },
-        }) as ExpoIAP.RequestPurchaseIOS | ExpoIAP.RequestPurchaseAndroid,
-        type: 'inapp',
-      });
+      const request = Platform.select({
+        ios: { sku },
+        android: { skus: [sku] },
+        default: { sku },
+      }) as ExpoIAP.RequestPurchasePropsByPlatforms;
+      await ExpoIAP.requestPurchase({ request, type: 'in-app' });
       return true;
     } catch (error) {
       console.warn('Purchase failed:', error);
@@ -63,14 +62,12 @@ class IAPManager {
     }
 
     try {
-      await ExpoIAP.requestPurchase({
-        request: Platform.select({
-          ios: { sku: productId },
-          android: { skus: [productId] },
-          default: { sku: productId },
-        }) as ExpoIAP.RequestPurchaseIOS | ExpoIAP.RequestPurchaseAndroid,
-        type: 'inapp',
-      });
+      const request = Platform.select({
+        ios: { sku: productId },
+        android: { skus: [productId] },
+        default: { sku: productId },
+      }) as ExpoIAP.RequestPurchasePropsByPlatforms;
+      await ExpoIAP.requestPurchase({ request, type: 'in-app' });
       return true;
     } catch (error) {
       console.warn('Shard purchase failed:', error);
