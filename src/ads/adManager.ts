@@ -48,7 +48,7 @@ class AdManager {
       this.isRewardedLoaded = true;
     });
 
-    this.rewarded.addAdEventListener(RewardedAdEventType.CLOSED, () => {
+    this.rewarded.addAdEventListener(AdEventType.CLOSED, () => {
       this.isRewardedLoaded = false;
       this.loadRewarded(); // Preload next ad
     });
