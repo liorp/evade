@@ -1,16 +1,24 @@
-import { isExpoGo } from '../utils/environment';
+import { isExpoGo, isWeb } from '../utils/environment';
 import { AD_UNIT_IDS } from '../const/ads';
 import { trackAdShown, trackAdCompleted, trackAdFailed, AdPlacement } from '../analytics';
 
-// Conditionally import real or mock ads
+// Conditionally import real, web, or mock ads based on platform
+const getAdsModule = () => {
+  if (isWeb) {
+    return require('./webAds');
+  }
+  if (isExpoGo) {
+    return require('../mocks/googleMobileAds');
+  }
+  return require('react-native-google-mobile-ads');
+};
+
 const {
   InterstitialAd,
   RewardedAd,
   AdEventType,
   RewardedAdEventType,
-} = isExpoGo
-  ? require('../mocks/googleMobileAds')
-  : require('react-native-google-mobile-ads');
+} = getAdsModule();
 
 interface AdInstance {
   addAdEventListener: (event: string, callback: (arg?: unknown) => void) => () => void;

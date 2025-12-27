@@ -3,6 +3,8 @@ import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { adManager } from './ads/adManager';
+import { WebAdModal } from './ads/WebAdModal';
+import { isWeb } from './utils/environment';
 import { usePurchaseStore } from './state/purchaseStore';
 import { useAdStore } from './state/adStore';
 import { iapManager } from './iap/iapManager';
@@ -83,6 +85,7 @@ export default function App() {
           <Stack.Screen name="Shop" component={ShopScreen} />
         </Stack.Navigator>
       </NavigationContainer>
+      {isWeb && <WebAdModal />}
     </GestureHandlerRootView>
   );
 }

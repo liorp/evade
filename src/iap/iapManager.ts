@@ -1,13 +1,30 @@
 import { Platform } from 'react-native';
-import { isExpoGo } from '../utils/environment';
+import { isExpoGo, isWeb } from '../utils/environment';
 import { IAP_PRODUCTS } from '../const/iap';
 import { trackIapInitiated, trackIapCompleted, trackIapFailed } from '../analytics';
 import type { ProductOrSubscription, RequestPurchasePropsByPlatforms, Purchase } from '../mocks/expoIap';
 
-// Conditionally import real or mock IAP
-const ExpoIAP = isExpoGo
-  ? require('../mocks/expoIap')
-  : require('expo-iap');
+// Conditionally import real or mock IAP (web uses no-op implementation)
+const getIAPModule = () => {
+  if (isWeb) {
+    // Return a no-op implementation for web
+    return {
+      initConnection: async () => {},
+      endConnection: async () => {},
+      fetchProducts: async () => [],
+      requestPurchase: async () => {
+        throw new Error('IAP not available on web');
+      },
+      getAvailablePurchases: async () => [],
+    };
+  }
+  if (isExpoGo) {
+    return require('../mocks/expoIap');
+  }
+  return require('expo-iap');
+};
+
+const ExpoIAP = getIAPModule();
 
 class IAPManager {
   private isInitialized = false;
@@ -121,6 +138,10 @@ class IAPManager {
   getProductPrice(productId: string): string {
     const product = this.products.find((p) => p.id === productId);
     return product?.displayPrice ?? '';
+  }
+
+  isAvailable(): boolean {
+    return !isWeb;
   }
 
   async disconnect(): Promise<void> {

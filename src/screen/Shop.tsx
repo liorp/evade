@@ -226,20 +226,28 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
           </Pressable>
         ) : null}
 
-        {/* Buy Shard Packs */}
-        <View style={styles.packsContainer}>
-          {SHARD_PACKS.map((pack) => (
-            <Pressable
-              key={pack.productId}
-              style={styles.packCard}
-              onPress={() => handleBuyShardPack(pack)}
-            >
-              <Text style={styles.packShards}>{pack.shards} 💎</Text>
-              {'bonus' in pack && <Text style={styles.packBonus}>{pack.bonus}</Text>}
-              <Text style={styles.packPrice}>{pack.price}</Text>
-            </Pressable>
-          ))}
-        </View>
+        {/* Buy Shard Packs - Only show on native platforms */}
+        {iapManager.isAvailable() ? (
+          <View style={styles.packsContainer}>
+            {SHARD_PACKS.map((pack) => (
+              <Pressable
+                key={pack.productId}
+                style={styles.packCard}
+                onPress={() => handleBuyShardPack(pack)}
+              >
+                <Text style={styles.packShards}>{pack.shards} 💎</Text>
+                {'bonus' in pack && <Text style={styles.packBonus}>{pack.bonus}</Text>}
+                <Text style={styles.packPrice}>{pack.price}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.webNotice}>
+            <Text style={styles.webNoticeText}>
+              {t('shop.purchasesOnMobile', 'Purchases available on iOS/Android app')}
+            </Text>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -422,5 +430,16 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  webNotice: {
+    backgroundColor: '#2a2a4e',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  webNoticeText: {
+    color: COLORS.textMuted,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

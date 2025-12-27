@@ -13,3 +13,17 @@ export const AD_CONFIG = {
   FIRST_AD_AFTER_DEATHS: 2, // No ad on first death, start counting from 2nd
   CONTINUE_SHIELD_DURATION: 2000, // 2 seconds of shield after continue
 } as const;
+
+// Web AdSense configuration
+// Get your publisher ID from https://www.google.com/adsense/
+// Get your ad slot ID from AdSense dashboard after creating an ad unit
+export const WEB_AD_CONFIG = {
+  // Replace with your AdSense publisher ID (format: ca-pub-XXXXXXXXXXXXXXXX)
+  publisherId: '',
+  // Replace with your ad slot ID from AdSense
+  adSlotId: '',
+  // Seconds before interstitial close button appears
+  interstitialDelaySeconds: 3,
+  // Seconds user must watch rewarded ad to earn reward
+  rewardedDurationSeconds: 5,
+} as const;
