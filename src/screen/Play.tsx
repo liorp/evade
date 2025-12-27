@@ -19,6 +19,10 @@ import { GAME } from '../const/game';
 import { useSettingsStore } from '../state/settingsStore';
 import { useHighscoreStore } from '../state/highscoreStore';
 import { audioManager } from '../audio/audioManager';
+import { ContinueModal } from '../components/ContinueModal';
+import { useAdStore } from '../state/adStore';
+import { adManager } from '../ads/adManager';
+import { AD_CONFIG } from '../const/ads';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -34,10 +38,21 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { handedness, sfxEnabled } = useSettingsStore();
   const { addScore, getBestScore } = useHighscoreStore();
+  const {
+    incrementDeathCount,
+    resetRunState,
+    markAdShown,
+    markContinueUsed,
+    markRewardedWatched,
+    shouldShowInterstitial,
+    canUseContinue,
+  } = useAdStore();
   const bestScore = getBestScore();
   const [score, setScore] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [showContinueModal, setShowContinueModal] = useState(false);
+  const [pendingGameOver, setPendingGameOver] = useState(false);
   const [enemies, setEnemies] = useState<EnemyType[]>([]);
   const [boosters, setBoosters] = useState<BoosterType[]>([]);
   const [activeEffects, setActiveEffects] = useState<ActiveEffects>({
@@ -62,13 +77,14 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
 
     engine.setEventCallback((event, data) => {
       if (event === 'gameOver') {
-        setIsGameOver(true);
-        const finalScore = engine.getState().score;
-        if (finalScore > 0) {
-          addScore(finalScore);
-        }
-        if (sfxEnabled) {
-          audioManager.playGameOver();
+        incrementDeathCount();
+
+        // Check if player can use continue
+        if (canUseContinue() && adManager.isRewardedReady()) {
+          setPendingGameOver(true);
+          setShowContinueModal(true);
+        } else {
+          handleActualGameOver();
         }
       } else if (event === 'scoreUpdate') {
         setScore(data as number);
@@ -152,6 +168,37 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     gameEngine.current?.setPlayerPosition(x, y);
   }, []);
 
+  const handleActualGameOver = useCallback(async () => {
+    setIsGameOver(true);
+    const finalScore = gameEngine.current?.getState().score ?? 0;
+    if (finalScore > 0) {
+      addScore(finalScore);
+    }
+    if (sfxEnabled) {
+      audioManager.playGameOver();
+    }
+
+    // Show interstitial if needed
+    if (shouldShowInterstitial()) {
+      await adManager.showInterstitial();
+      markAdShown();
+    }
+  }, [addScore, sfxEnabled, shouldShowInterstitial, markAdShown]);
+
+  const handleContinue = useCallback(() => {
+    setShowContinueModal(false);
+    setPendingGameOver(false);
+    markContinueUsed();
+    markRewardedWatched();
+    gameEngine.current?.continueGame(AD_CONFIG.CONTINUE_SHIELD_DURATION);
+  }, [markContinueUsed, markRewardedWatched]);
+
+  const handleDeclineContinue = useCallback(() => {
+    setShowContinueModal(false);
+    setPendingGameOver(false);
+    handleActualGameOver();
+  }, [handleActualGameOver]);
+
   const gesture = Gesture.Pan()
     .onBegin((e) => {
       playerX.value = e.x;
@@ -169,7 +216,10 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     });
 
   const handleRetry = () => {
+    resetRunState(); // Reset continue used and rewarded watched flags
     setIsGameOver(false);
+    setShowContinueModal(false);
+    setPendingGameOver(false);
     setHasStarted(false);
     setScore(0);
     setEnemies([]);
@@ -267,8 +317,15 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         </View>
       )}
 
+      <ContinueModal
+        visible={showContinueModal}
+        canContinue={canUseContinue()}
+        onContinue={handleContinue}
+        onDecline={handleDeclineContinue}
+      />
+
       {/* Game Over Modal - outside gesture detector for button presses */}
-      {isGameOver && (
+      {isGameOver && !showContinueModal && (
         <View style={styles.gameOverOverlay}>
           <View style={styles.gameOverModal}>
             <Text style={styles.gameOverTitle}>{t('play.gameOver')}</Text>
