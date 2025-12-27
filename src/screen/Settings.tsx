@@ -318,6 +318,5 @@ const styles = StyleSheet.create({
   },
   purchaseButtonContainer: {
     marginTop: 16,
-    alignItems: 'center',
   },
 });
