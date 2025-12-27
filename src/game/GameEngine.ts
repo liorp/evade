@@ -235,12 +235,13 @@ export class GameEngine {
     );
     this.state.enemies = result.enemies;
 
-    // 7. Update score - points per enemy despawned, scaled by elapsed time
+    // 7. Update score - points per enemy despawned, scaled by elapsed time and enemy count
     if (result.removedCount > 0) {
       const timeMultiplier = 1 + this.state.playTime / 60000; // +1x per minute
-      let pointsPerEnemy = Math.floor(GAME.POINTS_PER_ENEMY * timeMultiplier);
+      const enemyCountMultiplier = this.getEnemyCountMultiplier();
+      let pointsPerEnemy = Math.floor(GAME.POINTS_PER_ENEMY * timeMultiplier * enemyCountMultiplier);
 
-      // Apply multiplier if active
+      // Apply booster multiplier if active
       if (this.state.activeEffects.multiplier.active) {
         pointsPerEnemy *= this.state.activeEffects.multiplier.value;
       }
@@ -280,6 +281,13 @@ export class GameEngine {
       }
     }
     return null;
+  }
+
+  private getEnemyCountMultiplier(): number {
+    const count = this.state.enemies.length;
+    if (count >= GAME.SPEED_SCORE_THRESHOLD_HIGH) return GAME.SPEED_SCORE_MULTIPLIER_HIGH;
+    if (count >= GAME.SPEED_SCORE_THRESHOLD_MEDIUM) return GAME.SPEED_SCORE_MULTIPLIER_MEDIUM;
+    return 1.0;
   }
 
   private applyBoosterEffect(booster: Booster, timestamp: number): void {
