@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BackgroundTheme, BACKGROUND_THEMES } from '../const/cosmetics';
+import { PerspectiveGrid } from '../components/ui';
 
 interface GameBackgroundProps {
   theme?: BackgroundTheme;
@@ -16,11 +17,7 @@ export const GameBackground: React.FC<GameBackgroundProps> = ({ theme = 'dark' }
 
       {/* Theme-specific decorations */}
       {theme === 'synthwave' && (
-        <>
-          <View style={styles.synthwaveLine1} />
-          <View style={styles.synthwaveLine2} />
-          <View style={styles.synthwaveLine3} />
-        </>
+        <PerspectiveGrid opacity={0.15} animated={false} />
       )}
 
       {theme === 'ocean' && (
@@ -42,30 +39,6 @@ const styles = StyleSheet.create({
     right: 0,
     height: '40%',
     opacity: 0.3,
-  },
-  synthwaveLine1: {
-    position: 'absolute',
-    bottom: '20%',
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: 'rgba(255, 0, 255, 0.3)',
-  },
-  synthwaveLine2: {
-    position: 'absolute',
-    bottom: '35%',
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: 'rgba(255, 0, 255, 0.2)',
-  },
-  synthwaveLine3: {
-    position: 'absolute',
-    bottom: '50%',
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: 'rgba(255, 0, 255, 0.1)',
   },
   oceanWave: {
     position: 'absolute',
