@@ -27,6 +27,7 @@ import {
   trackItemPreviewed,
   trackItemPurchased,
 } from '../analytics';
+import { SynthwaveBackground, ChromeText, GlassButton } from '../components/ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -135,11 +136,17 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
   const renderItem = (item: CosmeticItem) => {
     const owned = isOwned(item.category, item.id);
     const itemEquipped = isItemEquipped(item);
+    const isLocked = !owned && item.price > 0;
 
     return (
       <Pressable
         key={item.id}
-        style={[styles.itemCard, itemEquipped && styles.itemCardEquipped]}
+        style={[
+          styles.itemCard,
+          itemEquipped && styles.itemCardEquipped,
+          owned && !itemEquipped && styles.itemCardOwned,
+          isLocked && styles.itemCardLocked,
+        ]}
         onPress={() => (owned ? handleEquip(item) : handlePurchase(item))}
       >
         {/* Preview */}
@@ -158,7 +165,9 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
 
         {/* Status */}
         {itemEquipped ? (
-          <Text style={styles.equippedText}>{t('shop.equipped', 'Equipped')}</Text>
+          <View style={styles.equippedBadge}>
+            <Text style={styles.equippedText}>{t('shop.equipped', 'Equipped')}</Text>
+          </View>
         ) : owned ? (
           <Text style={styles.ownedText}>{t('shop.owned', 'Owned')}</Text>
         ) : item.price === 0 ? (
@@ -174,89 +183,113 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>{t('common.back', 'Back')}</Text>
-        </Pressable>
-        <Text style={styles.title}>{t('shop.title', 'Shop')}</Text>
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>{balance}</Text>
-          <Text style={styles.shardIcon}>💎</Text>
+    <View style={styles.container}>
+      <SynthwaveBackground
+        showStars
+        showGrid
+        showSun
+        showHalos
+        sunPosition={0.5}
+        gridOpacity={0.4}
+        halosVariant="centered"
+      />
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={styles.header}>
+          <GlassButton
+            title={t('common.back', 'Back')}
+            onPress={() => navigation.goBack()}
+            variant="secondary"
+            style={styles.backButton}
+          />
+          <ChromeText size={24} color="gold" glowPulse={false}>
+            {t('shop.title', 'Shop')}
+          </ChromeText>
+          <View style={styles.balanceContainer}>
+            <Text style={styles.balanceText}>{balance}</Text>
+            <Text style={styles.shardIcon}>💎</Text>
+          </View>
         </View>
-      </View>
 
-      {/* Category Tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.tabsContainer}
-        contentContainerStyle={styles.tabsContent}
-      >
-        {CATEGORIES.map((cat) => (
-          <Pressable
-            key={cat.key}
-            style={[styles.tab, selectedCategory === cat.key && styles.tabActive]}
-            onPress={() => {
-              setSelectedCategory(cat.key);
-              trackShopCategoryViewed({ category: cat.key });
-            }}
+        {/* Category Tabs */}
+        <View style={styles.tabsWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.tabsContainer}
+            contentContainerStyle={styles.tabsContent}
           >
-            <Text
-              style={[styles.tabText, selectedCategory === cat.key && styles.tabTextActive]}
-            >
-              {cat.label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      {/* Items Grid */}
-      <ScrollView style={styles.itemsContainer} contentContainerStyle={styles.itemsGrid}>
-        {items.map(renderItem)}
-      </ScrollView>
-
-      {/* Earn & Buy Shards Section */}
-      <View style={styles.earnSection}>
-        {/* Watch Ad */}
-        {canWatchRewardedAd() ? (
-          <Pressable style={styles.earnButton} onPress={handleWatchAdForShards}>
-            <Text style={styles.earnButtonText}>{t('shop.watchAd', 'Watch Ad (+10 💎)')}</Text>
-          </Pressable>
-        ) : null}
-
-        {/* Buy Shard Packs - Only show on native platforms */}
-        {iapManager.isAvailable() ? (
-          <View style={styles.packsContainer}>
-            {SHARD_PACKS.map((pack) => (
+            {CATEGORIES.map((cat) => (
               <Pressable
-                key={pack.productId}
-                style={styles.packCard}
-                onPress={() => handleBuyShardPack(pack)}
+                key={cat.key}
+                style={[styles.tab, selectedCategory === cat.key && styles.tabActive]}
+                onPress={() => {
+                  setSelectedCategory(cat.key);
+                  trackShopCategoryViewed({ category: cat.key });
+                }}
               >
-                <Text style={styles.packShards}>{pack.shards} 💎</Text>
-                {'bonus' in pack && <Text style={styles.packBonus}>{pack.bonus}</Text>}
-                <Text style={styles.packPrice}>{pack.price}</Text>
+                <Text
+                  style={[styles.tabText, selectedCategory === cat.key && styles.tabTextActive]}
+                >
+                  {cat.label}
+                </Text>
               </Pressable>
             ))}
-          </View>
-        ) : (
-          <View style={styles.webNotice}>
-            <Text style={styles.webNoticeText}>
-              {t('shop.purchasesOnMobile', 'Purchases available on iOS/Android app')}
-            </Text>
-          </View>
-        )}
-      </View>
-    </SafeAreaView>
+          </ScrollView>
+        </View>
+
+        {/* Items Grid */}
+        <ScrollView style={styles.itemsContainer} contentContainerStyle={styles.itemsGrid}>
+          {items.map(renderItem)}
+        </ScrollView>
+
+        {/* Earn & Buy Shards Section */}
+        <View style={styles.earnSection}>
+          {/* Watch Ad */}
+          {canWatchRewardedAd() ? (
+            <GlassButton
+              title={t('shop.watchAd', 'Watch Ad (+10 💎)')}
+              onPress={handleWatchAdForShards}
+              variant="secondary"
+              style={styles.earnButton}
+            />
+          ) : null}
+
+          {/* Buy Shard Packs - Only show on native platforms */}
+          {iapManager.isAvailable() ? (
+            <View style={styles.packsContainer}>
+              {SHARD_PACKS.map((pack) => (
+                <Pressable
+                  key={pack.productId}
+                  style={styles.packCard}
+                  onPress={() => handleBuyShardPack(pack)}
+                >
+                  <Text style={styles.packShards}>{pack.shards} 💎</Text>
+                  {'bonus' in pack && <Text style={styles.packBonus}>{pack.bonus}</Text>}
+                  <Text style={styles.packPrice}>{pack.price}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.webNotice}>
+              <Text style={styles.webNoticeText}>
+                {t('shop.purchasesOnMobile', 'Purchases available on iOS/Android app')}
+              </Text>
+            </View>
+          )}
+        </View>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundDeep,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -265,49 +298,57 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   backButton: {
-    color: COLORS.menuAccent,
-    fontSize: 16,
-  },
-  title: {
-    color: COLORS.text,
-    fontSize: 24,
-    fontWeight: 'bold',
+    minWidth: 80,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   balanceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    backgroundColor: 'rgba(26, 26, 46, 0.8)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.chromeGold,
   },
   balanceText: {
-    color: COLORS.text,
+    color: COLORS.chromeGold,
     fontSize: 18,
     fontWeight: 'bold',
   },
   shardIcon: {
     fontSize: 16,
   },
+  tabsWrapper: {
+    backgroundColor: 'rgba(26, 26, 46, 0.8)',
+    marginHorizontal: 16,
+    borderRadius: 12,
+    paddingVertical: 8,
+  },
   tabsContainer: {
     maxHeight: 50,
   },
   tabsContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     gap: 8,
   },
   tab: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: 'transparent',
   },
   tabActive: {
-    backgroundColor: COLORS.menuAccent,
+    backgroundColor: COLORS.neonCyan,
   },
   tabText: {
     color: COLORS.textMuted,
     fontSize: 14,
   },
   tabTextActive: {
-    color: COLORS.text,
+    color: COLORS.backgroundDeep,
     fontWeight: 'bold',
   },
   itemsContainer: {
@@ -323,15 +364,28 @@ const styles = StyleSheet.create({
   itemCard: {
     width: '30%',
     aspectRatio: 0.85,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: 'rgba(26, 26, 46, 0.8)',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   itemCardEquipped: {
     borderWidth: 2,
-    borderColor: COLORS.menuAccent,
+    borderColor: COLORS.neonCyan,
+    shadowColor: COLORS.neonCyan,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+  },
+  itemCardOwned: {
+    borderWidth: 1,
+    borderColor: 'rgba(157, 78, 221, 0.4)',
+  },
+  itemCardLocked: {
+    opacity: 0.7,
   },
   previewContainer: {
     width: 50,
@@ -348,27 +402,33 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#2a2a4e',
+    backgroundColor: 'rgba(42, 42, 78, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
-    color: COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
   itemName: {
-    color: COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 12,
     textAlign: 'center',
   },
+  equippedBadge: {
+    backgroundColor: 'rgba(0, 245, 255, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   equippedText: {
-    color: COLORS.menuAccent,
+    color: COLORS.neonCyan,
     fontSize: 10,
     fontWeight: 'bold',
   },
   ownedText: {
-    color: '#44bb44',
+    color: COLORS.neonPurple,
     fontSize: 10,
   },
   freeText: {
@@ -381,27 +441,19 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   priceText: {
-    color: '#ffd700',
+    color: COLORS.chromeGold,
     fontSize: 12,
     fontWeight: 'bold',
   },
   earnSection: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#2a2a4e',
+    borderTopColor: 'rgba(74, 26, 107, 0.5)',
   },
   earnButton: {
-    backgroundColor: '#44bb44',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
     marginBottom: 16,
-  },
-  earnButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    minWidth: 0,
+    width: '100%',
   },
   packsContainer: {
     flexDirection: 'row',
@@ -410,32 +462,36 @@ const styles = StyleSheet.create({
   },
   packCard: {
     flex: 1,
-    backgroundColor: '#2a2a4e',
+    backgroundColor: 'rgba(26, 26, 46, 0.8)',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(157, 78, 221, 0.4)',
   },
   packShards: {
-    color: '#ffd700',
+    color: COLORS.chromeGold,
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   packBonus: {
-    color: '#44bb44',
+    color: COLORS.neonCyan,
     fontSize: 10,
     marginBottom: 4,
   },
   packPrice: {
-    color: COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
   webNotice: {
-    backgroundColor: '#2a2a4e',
+    backgroundColor: 'rgba(26, 26, 46, 0.8)',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(74, 26, 107, 0.5)',
   },
   webNoticeText: {
     color: COLORS.textMuted,
