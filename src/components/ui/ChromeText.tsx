@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withRepeat,
   withTiming,
+  cancelAnimation,
 } from 'react-native-reanimated';
 import { COLORS } from '../../const/colors';
 
@@ -48,8 +49,11 @@ export const ChromeText: React.FC<ChromeTextProps> = ({
         -1,
         true
       );
+    } else {
+      cancelAnimation(glowOpacity);
+      glowOpacity.value = 0.6; // Static glow when not pulsing
     }
-  }, [glowPulse]);
+  }, [glowPulse, glowOpacity]);
 
   const animatedGlowStyle = useAnimatedStyle(() => ({
     opacity: glowOpacity.value,
