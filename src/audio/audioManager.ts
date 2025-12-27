@@ -3,6 +3,7 @@ import { Audio } from 'expo-av';
 class AudioManager {
   private backgroundMusic: Audio.Sound | null = null;
   private gameOverSound: Audio.Sound | null = null;
+  private dodgeSound: Audio.Sound | null = null;
   private musicEnabled = true;
   private sfxEnabled = true;
   private isLoaded = false;
@@ -29,6 +30,13 @@ class AudioManager {
         { volume: 0.7 }
       );
       this.gameOverSound = gameOver;
+
+      // Load dodge sound
+      const { sound: dodge } = await Audio.Sound.createAsync(
+        require('../../assets/audio/dodge.mp3'),
+        { volume: 0.5 }
+      );
+      this.dodgeSound = dodge;
 
       this.isLoaded = true;
     } catch (error) {
@@ -65,6 +73,16 @@ class AudioManager {
     }
   }
 
+  async playDodge(): Promise<void> {
+    if (!this.sfxEnabled || !this.dodgeSound) return;
+    try {
+      await this.dodgeSound.setPositionAsync(0);
+      await this.dodgeSound.playAsync();
+    } catch (error) {
+      console.warn('Dodge sound failed:', error);
+    }
+  }
+
   setMusicEnabled(enabled: boolean): void {
     this.musicEnabled = enabled;
     if (!enabled) {
@@ -85,6 +103,10 @@ class AudioManager {
       if (this.gameOverSound) {
         await this.gameOverSound.unloadAsync();
         this.gameOverSound = null;
+      }
+      if (this.dodgeSound) {
+        await this.dodgeSound.unloadAsync();
+        this.dodgeSound = null;
       }
       this.isLoaded = false;
     } catch (error) {
