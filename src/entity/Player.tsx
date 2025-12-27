@@ -7,23 +7,72 @@ import Animated, {
   withTiming,
   useSharedValue,
   withSequence,
+  interpolateColor,
+  Easing,
 } from 'react-native-reanimated';
-import { COLORS } from '../const/colors';
 import { GAME } from '../const/game';
+import {
+  PlayerShape,
+  PlayerColorId,
+  PlayerTrail,
+  PlayerGlow,
+  PLAYER_COLORS,
+} from '../const/cosmetics';
 
 interface PlayerProps {
   x: SharedValue<number>;
   y: SharedValue<number>;
   hasShield?: boolean;
-  dodgeFlashTrigger?: number; // Increment to trigger flash
+  dodgeFlashTrigger?: number;
+  // Cosmetic props
+  shape?: PlayerShape;
+  colorId?: PlayerColorId;
+  trail?: PlayerTrail;
+  glow?: PlayerGlow;
 }
 
-export const Player: React.FC<PlayerProps> = ({ x, y, hasShield = false, dodgeFlashTrigger = 0 }) => {
+export const Player: React.FC<PlayerProps> = ({
+  x,
+  y,
+  hasShield = false,
+  dodgeFlashTrigger = 0,
+  shape = 'circle',
+  colorId = 'green',
+  trail = 'none',
+  glow = 'none',
+}) => {
+  const colorData = PLAYER_COLORS[colorId];
+  const playerColor = colorData.hex;
+  const glowColor = colorData.glowHex;
+
   const shieldPulse = useSharedValue(1);
   const dodgeFlashOpacity = useSharedValue(0);
   const dodgeFlashScale = useSharedValue(1);
+  const glowPulse = useSharedValue(1);
+  const rgbProgress = useSharedValue(0);
 
-  // Trigger flash animation when dodgeFlashTrigger changes
+  // Glow animation based on type
+  useEffect(() => {
+    if (glow === 'pulse') {
+      glowPulse.value = withRepeat(
+        withTiming(1.3, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+        -1,
+        true
+      );
+    } else if (glow === 'rgb') {
+      rgbProgress.value = withRepeat(
+        withTiming(1, { duration: 2000, easing: Easing.linear }),
+        -1,
+        false
+      );
+    } else if (glow === 'constant') {
+      glowPulse.value = 1.2;
+    } else {
+      glowPulse.value = 1;
+    }
+  }, [glow, glowPulse, rgbProgress]);
+
+  // Dodge flash animation
   useEffect(() => {
     if (dodgeFlashTrigger > 0) {
       dodgeFlashOpacity.value = withSequence(
@@ -35,9 +84,10 @@ export const Player: React.FC<PlayerProps> = ({ x, y, hasShield = false, dodgeFl
         withTiming(1, { duration: 150 })
       );
     }
-  }, [dodgeFlashTrigger]);
+  }, [dodgeFlashTrigger, dodgeFlashOpacity, dodgeFlashScale]);
 
-  React.useEffect(() => {
+  // Shield animation
+  useEffect(() => {
     if (hasShield) {
       shieldPulse.value = withRepeat(
         withTiming(1.2, { duration: 300 }),
@@ -47,7 +97,7 @@ export const Player: React.FC<PlayerProps> = ({ x, y, hasShield = false, dodgeFl
     } else {
       shieldPulse.value = 1;
     }
-  }, [hasShield]);
+  }, [hasShield, shieldPulse]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -66,15 +116,65 @@ export const Player: React.FC<PlayerProps> = ({ x, y, hasShield = false, dodgeFl
     transform: [{ scale: dodgeFlashScale.value }],
   }));
 
+  const glowStyle = useAnimatedStyle(() => {
+    if (glow === 'rgb') {
+      const color = interpolateColor(
+        rgbProgress.value,
+        [0, 0.33, 0.66, 1],
+        ['rgba(255,0,0,0.4)', 'rgba(0,255,0,0.4)', 'rgba(0,0,255,0.4)', 'rgba(255,0,0,0.4)']
+      );
+      return {
+        backgroundColor: color,
+        transform: [{ scale: glowPulse.value }],
+      };
+    }
+    return {
+      backgroundColor: glowColor,
+      transform: [{ scale: glowPulse.value }],
+    };
+  });
+
+  // Render shape
+  const renderShape = () => {
+    const baseStyle = {
+      width: GAME.PLAYER_RADIUS * 2,
+      height: GAME.PLAYER_RADIUS * 2,
+      backgroundColor: playerColor,
+    };
+
+    switch (shape) {
+      case 'square':
+        return <View style={[baseStyle, styles.square]} />;
+      case 'triangle':
+        return (
+          <View style={styles.triangleContainer}>
+            <View style={[styles.triangle, { borderBottomColor: playerColor }]} />
+          </View>
+        );
+      case 'hexagon':
+        return <View style={[baseStyle, styles.hexagon]} />;
+      case 'star':
+        return <View style={[baseStyle, styles.star]} />;
+      default:
+        return <View style={[baseStyle, styles.circle]} />;
+    }
+  };
+
+  // Trail effect - simplified (just shows when trail is active)
+  const showTrail = trail !== 'none';
+
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
       {/* Dodge flash ring */}
       <Animated.View style={[styles.dodgeFlash, dodgeFlashStyle]} />
-      {hasShield && (
-        <Animated.View style={[styles.shield, shieldStyle]} />
+      {/* Shield */}
+      {hasShield && <Animated.View style={[styles.shield, shieldStyle]} />}
+      {/* Glow */}
+      {(glow !== 'none' || showTrail) && (
+        <Animated.View style={[styles.glow, glowStyle]} />
       )}
-      <View style={styles.glow} />
-      <View style={styles.player} />
+      {/* Player shape */}
+      {renderShape()}
     </Animated.View>
   );
 };
@@ -84,6 +184,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: GAME.PLAYER_RADIUS * 2,
     height: GAME.PLAYER_RADIUS * 2,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   shield: {
     position: 'absolute',
@@ -92,8 +194,6 @@ const styles = StyleSheet.create({
     borderRadius: GAME.PLAYER_RADIUS * 1.5,
     borderWidth: 4,
     borderColor: '#44ff44',
-    top: -GAME.PLAYER_RADIUS * 0.5,
-    left: -GAME.PLAYER_RADIUS * 0.5,
     backgroundColor: 'rgba(68, 255, 68, 0.2)',
   },
   glow: {
@@ -101,15 +201,37 @@ const styles = StyleSheet.create({
     width: GAME.PLAYER_RADIUS * 2.5,
     height: GAME.PLAYER_RADIUS * 2.5,
     borderRadius: GAME.PLAYER_RADIUS * 1.25,
-    backgroundColor: COLORS.playerGlow,
-    top: -GAME.PLAYER_RADIUS * 0.25,
-    left: -GAME.PLAYER_RADIUS * 0.25,
   },
-  player: {
+  circle: {
+    borderRadius: GAME.PLAYER_RADIUS,
+  },
+  square: {
+    borderRadius: 6,
+  },
+  triangleContainer: {
     width: GAME.PLAYER_RADIUS * 2,
     height: GAME.PLAYER_RADIUS * 2,
-    borderRadius: GAME.PLAYER_RADIUS,
-    backgroundColor: COLORS.player,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  triangle: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: GAME.PLAYER_RADIUS,
+    borderRightWidth: GAME.PLAYER_RADIUS,
+    borderBottomWidth: GAME.PLAYER_RADIUS * 1.7,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+  hexagon: {
+    borderRadius: GAME.PLAYER_RADIUS * 0.3,
+    transform: [{ rotate: '30deg' }],
+  },
+  star: {
+    borderRadius: GAME.PLAYER_RADIUS * 0.2,
+    transform: [{ rotate: '45deg' }],
   },
   dodgeFlash: {
     position: 'absolute',
@@ -118,8 +240,6 @@ const styles = StyleSheet.create({
     borderRadius: GAME.PLAYER_RADIUS * 1.75,
     borderWidth: 3,
     borderColor: '#ffffff',
-    top: -GAME.PLAYER_RADIUS * 0.75,
-    left: -GAME.PLAYER_RADIUS * 0.75,
     backgroundColor: 'transparent',
   },
 });
