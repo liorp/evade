@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { trackShardsChanged } from '../analytics';
 
 interface ShardState {
   balance: number;
@@ -30,18 +31,38 @@ export const useShardStore = create<ShardState>()(
       lastRewardedAdDate: null,
       rewardedAdsToday: 0,
 
-      addShards: (amount, _source) => {
-        set((state) => ({
-          balance: state.balance + amount,
+      addShards: (amount, source) => {
+        const state = get();
+        const previous = state.balance;
+        const newBalance = previous + amount;
+
+        trackShardsChanged({
+          previous,
+          new: newBalance,
+          reason: source === 'purchase' ? 'purchased' : 'earned',
+        });
+
+        set({
+          balance: newBalance,
           totalEarned: state.totalEarned + amount,
-        }));
+        });
       },
 
       spendShards: (amount) => {
         const state = get();
         if (state.balance < amount) return false;
+
+        const previous = state.balance;
+        const newBalance = previous - amount;
+
+        trackShardsChanged({
+          previous,
+          new: newBalance,
+          reason: 'spent',
+        });
+
         set({
-          balance: state.balance - amount,
+          balance: newBalance,
           totalSpent: state.totalSpent + amount,
         });
         return true;

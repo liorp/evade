@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { isExpoGo } from '../utils/environment';
 import { IAP_PRODUCTS } from '../const/iap';
+import { trackIapInitiated, trackIapCompleted, trackIapFailed } from '../analytics';
 import type { ProductOrSubscription, RequestPurchasePropsByPlatforms, Purchase } from '../mocks/expoIap';
 
 // Conditionally import real or mock IAP
@@ -47,25 +48,10 @@ class IAPManager {
       await this.initialize();
     }
 
-    try {
-      const sku = IAP_PRODUCTS.REMOVE_ADS as string;
-      const request = Platform.select({
-        ios: { sku },
-        android: { skus: [sku] },
-        default: { sku },
-      }) as RequestPurchasePropsByPlatforms;
-      await ExpoIAP.requestPurchase({ request, type: 'in-app' });
-      return true;
-    } catch (error) {
-      console.warn('Purchase failed:', error);
-      return false;
-    }
-  }
+    const productId = IAP_PRODUCTS.REMOVE_ADS as string;
+    const price = this.getRemoveAdsPrice();
 
-  async purchaseShards(productId: string): Promise<boolean> {
-    if (!this.isInitialized) {
-      await this.initialize();
-    }
+    trackIapInitiated({ product_id: productId, price });
 
     try {
       const request = Platform.select({
@@ -74,8 +60,37 @@ class IAPManager {
         default: { sku: productId },
       }) as RequestPurchasePropsByPlatforms;
       await ExpoIAP.requestPurchase({ request, type: 'in-app' });
+      trackIapCompleted({ product_id: productId, price });
       return true;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      trackIapFailed({ product_id: productId, error: errorMessage });
+      console.warn('Purchase failed:', error);
+      return false;
+    }
+  }
+
+  async purchaseShards(productId: string, shardsGranted?: number): Promise<boolean> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    const price = this.getProductPrice(productId);
+
+    trackIapInitiated({ product_id: productId, price });
+
+    try {
+      const request = Platform.select({
+        ios: { sku: productId },
+        android: { skus: [productId] },
+        default: { sku: productId },
+      }) as RequestPurchasePropsByPlatforms;
+      await ExpoIAP.requestPurchase({ request, type: 'in-app' });
+      trackIapCompleted({ product_id: productId, price, shards_granted: shardsGranted });
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      trackIapFailed({ product_id: productId, error: errorMessage });
       console.warn('Shard purchase failed:', error);
       return false;
     }

@@ -1,10 +1,12 @@
 import './src/i18n';
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import Constants from 'expo-constants';
 import { adManager } from './src/ads/adManager';
 import { usePurchaseStore } from './src/state/purchaseStore';
 import { useAdStore } from './src/state/adStore';
 import { iapManager } from './src/iap/iapManager';
+import { initAnalytics, trackAppOpened } from './src/analytics';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -30,6 +32,17 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function App() {
   const { adsRemoved } = usePurchaseStore();
   const { setAdsRemoved } = useAdStore();
+
+  useEffect(() => {
+    const setupAnalytics = async () => {
+      await initAnalytics();
+      trackAppOpened({
+        source: 'cold',
+        app_version: Constants.expoConfig?.version ?? '1.0.0',
+      });
+    };
+    setupAnalytics();
+  }, []);
 
   useEffect(() => {
     adManager.initialize();

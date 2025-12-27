@@ -1,5 +1,6 @@
 import { isExpoGo } from '../utils/environment';
 import { AD_UNIT_IDS } from '../const/ads';
+import { trackAdShown, trackAdCompleted, trackAdFailed, AdPlacement } from '../analytics';
 
 // Conditionally import real or mock ads
 const {
@@ -102,37 +103,50 @@ class AdManager {
     rewarded.load();
   }
 
-  async showInterstitial(): Promise<boolean> {
+  async showInterstitial(placement: AdPlacement = 'game_over'): Promise<boolean> {
     if (!this.isInterstitialLoaded || !this.interstitial) {
       return false;
     }
 
+    trackAdShown({ ad_type: 'interstitial', placement });
+
     try {
       await this.interstitial.show();
+      trackAdCompleted({ ad_type: 'interstitial', placement, reward_granted: false });
       return true;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      trackAdFailed({ ad_type: 'interstitial', placement, error: errorMessage });
       console.warn('Failed to show interstitial:', error);
       return false;
     }
   }
 
-  async showRewarded(onRewarded: () => void): Promise<boolean> {
+  async showRewarded(onRewarded: () => void, placement: AdPlacement = 'continue'): Promise<boolean> {
     if (!this.isRewardedLoaded || !this.rewarded) {
       return false;
     }
 
+    trackAdShown({ ad_type: 'rewarded', placement });
+
     return new Promise((resolve) => {
+      let rewardGranted = false;
+
       const unsubscribe = this.rewarded!.addAdEventListener(
         RewardedAdEventType.EARNED_REWARD,
         () => {
+          rewardGranted = true;
           onRewarded();
           unsubscribe();
         }
       );
 
       this.rewarded!.show().then(() => {
+        trackAdCompleted({ ad_type: 'rewarded', placement, reward_granted: rewardGranted });
         resolve(true);
       }).catch((error: unknown) => {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        trackAdFailed({ ad_type: 'rewarded', placement, error: errorMessage });
         console.warn('Failed to show rewarded:', error);
         unsubscribe();
         resolve(false);
