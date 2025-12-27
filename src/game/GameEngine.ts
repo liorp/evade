@@ -1,10 +1,19 @@
-import { GameState, Position, Handedness, Enemy } from './types';
-import { checkCollision } from './systems/collision';
+import { GameState, Position, Handedness, Enemy, Booster, ActiveEffects } from './types';
+import { checkCollision, checkBoosterCollision, checkCloseDodges } from './systems/collision';
 import { getDifficultyParams, getSpawnZone } from './systems/difficulty';
-import { getSpawnPosition, createEnemy, shouldSpawn } from './systems/spawn';
+import {
+  getSpawnPosition,
+  createEnemy,
+  shouldSpawn,
+  getBoosterSpawnPosition,
+  createBooster,
+  shouldSpawnBooster,
+  isBoosterExpired,
+} from './systems/spawn';
 import { updateEnemies } from './systems/movement';
+import { GAME } from '../const/game';
 
-export type GameEventType = 'gameOver' | 'scoreUpdate' | 'stateChange';
+export type GameEventType = 'gameOver' | 'scoreUpdate' | 'stateChange' | 'boosterCollected' | 'closeDodge';
 export type GameEventCallback = (event: GameEventType, data?: unknown) => void;
 
 export class GameEngine {
@@ -24,11 +33,19 @@ export class GameEngine {
       isRunning: false,
       isPaused: true,
       isGameOver: false,
+      hasStarted: false,
       score: 0,
+      playTime: 0,
       playerPosition: { x: screenWidth / 2, y: screenHeight / 2 },
       enemies: [],
+      boosters: [],
+      activeEffects: {
+        shield: { active: false, endTime: 0 },
+        multiplier: { active: false, endTime: 0, value: 1 },
+      },
       startTime: 0,
       lastSpawnTime: 0,
+      lastBoosterSpawnTime: 0,
       screenWidth,
       screenHeight,
     };
@@ -62,8 +79,10 @@ export class GameEngine {
       ...this.createInitialState(this.state.screenWidth, this.state.screenHeight),
       isRunning: true,
       isPaused: true, // Wait for first touch
+      hasStarted: false,
       startTime: now,
       lastSpawnTime: now,
+      lastBoosterSpawnTime: now,
     };
     this.lastTimestamp = now;
     this.emit('stateChange');
@@ -73,6 +92,7 @@ export class GameEngine {
   resume(): void {
     if (!this.state.isRunning || !this.state.isPaused) return;
     this.state.isPaused = false;
+    this.state.hasStarted = true;
     this.lastTimestamp = performance.now();
     this.emit('stateChange');
   }
@@ -92,6 +112,13 @@ export class GameEngine {
     this.emit('stateChange');
   }
 
+  triggerGameOver(): void {
+    if (!this.state.isRunning || this.state.isGameOver) return;
+    this.state.isGameOver = true;
+    this.state.isRunning = false;
+    this.emit('gameOver', { score: this.state.score });
+  }
+
   private loop = (timestamp: number): void => {
     if (!this.state.isRunning) return;
 
@@ -105,18 +132,53 @@ export class GameEngine {
   };
 
   private update(timestamp: number, deltaTime: number): void {
-    const elapsedTime = timestamp - this.state.startTime;
-    const difficulty = getDifficultyParams(elapsedTime);
+    // Accumulate actual play time (not pause time)
+    this.state.playTime += deltaTime;
+    const difficulty = getDifficultyParams(this.state.playTime);
 
-    // 1. Check collision first
+    // Update active effects
+    this.updateActiveEffects(timestamp);
+
+    // 1. Check collision first (but shield protects)
     if (checkCollision(this.state.playerPosition, this.state.enemies)) {
-      this.state.isGameOver = true;
-      this.state.isRunning = false;
-      this.emit('gameOver', { score: this.state.score });
-      return;
+      if (this.state.activeEffects.shield.active) {
+        // Shield absorbs hit - clear all nearby enemies
+        this.state.enemies = this.state.enemies.filter(
+          (enemy) =>
+            Math.hypot(
+              enemy.position.x - this.state.playerPosition.x,
+              enemy.position.y - this.state.playerPosition.y
+            ) > GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS + 50
+        );
+        // Deactivate shield after use
+        this.state.activeEffects.shield.active = false;
+        this.state.activeEffects.shield.endTime = 0;
+      } else {
+        this.state.isGameOver = true;
+        this.state.isRunning = false;
+        this.emit('gameOver', { score: this.state.score });
+        return;
+      }
     }
 
-    // 2. Spawn enemies
+    // 1.5. Check close dodges (after collision, before boosters)
+    const closeDodgeResult = checkCloseDodges(this.state.playerPosition, this.state.enemies);
+    if (closeDodgeResult.count > 0) {
+      this.state.enemies = closeDodgeResult.enemies;
+      this.state.score += closeDodgeResult.count * GAME.CLOSE_DODGE_POINTS;
+      this.emit('closeDodge', closeDodgeResult.count);
+      this.emit('scoreUpdate', this.state.score);
+    }
+
+    // 2. Check booster collection
+    const collectedBooster = this.checkBoosterCollection();
+    if (collectedBooster) {
+      this.applyBoosterEffect(collectedBooster, timestamp);
+      this.state.boosters = this.state.boosters.filter((b) => b.id !== collectedBooster.id);
+      this.emit('boosterCollected', collectedBooster.type);
+    }
+
+    // 3. Spawn enemies
     if (
       shouldSpawn(
         this.state.lastSpawnTime,
@@ -126,33 +188,119 @@ export class GameEngine {
         difficulty.maxEnemies
       )
     ) {
-      const spawnZone = getSpawnZone(elapsedTime);
+      const spawnZone = getSpawnZone(this.state.playTime);
       const position = getSpawnPosition(
         spawnZone,
         this.state.screenWidth,
         this.state.screenHeight,
         this.handedness
       );
-      const enemy = createEnemy(position, timestamp);
+      const enemy = createEnemy(position, timestamp, this.state.playTime);
       this.state.enemies.push(enemy);
       this.state.lastSpawnTime = timestamp;
     }
 
-    // 3. Move enemies
-    this.state.enemies = updateEnemies(
+    // 4. Spawn boosters
+    if (
+      shouldSpawnBooster(
+        this.state.lastBoosterSpawnTime,
+        timestamp,
+        this.state.boosters.length
+      )
+    ) {
+      const position = getBoosterSpawnPosition(
+        this.state.screenWidth,
+        this.state.screenHeight,
+        this.state.playerPosition
+      );
+      const booster = createBooster(position, timestamp);
+      this.state.boosters.push(booster);
+      this.state.lastBoosterSpawnTime = timestamp;
+    }
+
+    // 5. Remove expired boosters
+    this.state.boosters = this.state.boosters.filter(
+      (booster) => !isBoosterExpired(booster, timestamp)
+    );
+
+    // 6. Move enemies and track removed (each enemy uses its own speed)
+    const result = updateEnemies(
       this.state.enemies,
       this.state.playerPosition,
       deltaTime,
       timestamp,
-      difficulty.enemySpeed,
       difficulty.jitterIntensity,
       this.state.screenWidth,
       this.state.screenHeight
     );
+    this.state.enemies = result.enemies;
 
-    // 4. Update score
-    this.state.score = elapsedTime / 1000;
-    this.emit('scoreUpdate', this.state.score);
+    // 7. Update score - points per enemy despawned, scaled by elapsed time
+    if (result.removedCount > 0) {
+      const timeMultiplier = 1 + this.state.playTime / 60000; // +1x per minute
+      let pointsPerEnemy = Math.floor(GAME.POINTS_PER_ENEMY * timeMultiplier);
+
+      // Apply multiplier if active
+      if (this.state.activeEffects.multiplier.active) {
+        pointsPerEnemy *= this.state.activeEffects.multiplier.value;
+      }
+
+      this.state.score += result.removedCount * pointsPerEnemy;
+      this.emit('scoreUpdate', this.state.score);
+    }
+  }
+
+  private updateActiveEffects(timestamp: number): void {
+    // Check shield expiration
+    if (
+      this.state.activeEffects.shield.active &&
+      timestamp > this.state.activeEffects.shield.endTime
+    ) {
+      this.state.activeEffects.shield.active = false;
+    }
+
+    // Check multiplier expiration
+    if (
+      this.state.activeEffects.multiplier.active &&
+      timestamp > this.state.activeEffects.multiplier.endTime
+    ) {
+      this.state.activeEffects.multiplier.active = false;
+      this.state.activeEffects.multiplier.value = 1;
+    }
+  }
+
+  private checkBoosterCollection(): Booster | null {
+    for (const booster of this.state.boosters) {
+      const distance = Math.hypot(
+        booster.position.x - this.state.playerPosition.x,
+        booster.position.y - this.state.playerPosition.y
+      );
+      if (distance < GAME.PLAYER_RADIUS + GAME.BOOSTER_RADIUS) {
+        return booster;
+      }
+    }
+    return null;
+  }
+
+  private applyBoosterEffect(booster: Booster, timestamp: number): void {
+    switch (booster.type) {
+      case 'plus':
+        // Add bonus points
+        this.state.score += GAME.BOOSTER_PLUS_POINTS;
+        this.emit('scoreUpdate', this.state.score);
+        break;
+      case 'shield':
+        // Activate shield
+        this.state.activeEffects.shield.active = true;
+        this.state.activeEffects.shield.endTime = timestamp + GAME.BOOSTER_SHIELD_DURATION;
+        break;
+      case 'multiplier':
+        // Activate multiplier
+        this.state.activeEffects.multiplier.active = true;
+        this.state.activeEffects.multiplier.endTime = timestamp + GAME.BOOSTER_MULTIPLIER_DURATION;
+        this.state.activeEffects.multiplier.value = GAME.BOOSTER_MULTIPLIER_VALUE;
+        break;
+    }
   }
 
   updateScreenSize(width: number, height: number): void {
