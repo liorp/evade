@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../const/colors';
+import { SynthwaveBackground, ChromeText, GlassButton } from '../components/ui';
 
 type RootStackParamList = {
   MainMenu: undefined;
@@ -31,115 +32,133 @@ export const InstructionsScreen: React.FC<InstructionsProps> = ({ navigation, ro
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {!fromFirstPlay && (
-        <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backText}>{t('common.back')}</Text>
-          </Pressable>
-        </View>
-      )}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>{t('instructions.title')}</Text>
-
-        {/* Goal */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('instructions.goal')}</Text>
-          <Text style={styles.text}>{t('instructions.goalText')}</Text>
-        </View>
-
-        {/* Controls */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('instructions.controlsTitle')}</Text>
-          <Text style={styles.text}>{t('instructions.controlsText')}</Text>
-        </View>
-
-        {/* Enemies */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('instructions.enemies')}</Text>
-          <Text style={[styles.text, { marginBottom: 12 }]}>{t('instructions.shapeShowsSpeed')}</Text>
-          <View style={styles.colorRow}>
-            <View style={[styles.enemyShape, styles.circle]} />
-            <Text style={styles.colorLabel}>{t('instructions.slow')}</Text>
-            <View style={[styles.enemyShape, styles.diamond]} />
-            <Text style={styles.colorLabel}>{t('instructions.medium')}</Text>
-            <View style={styles.triangleSmall}>
-              <View style={styles.triangleIcon} />
-            </View>
-            <Text style={styles.colorLabel}>{t('instructions.fast')}</Text>
+    <View style={styles.container}>
+      <SynthwaveBackground
+        showStars
+        showGrid
+        showSun={false}
+        showHalos={false}
+        gridOpacity={0.3}
+        gridAnimated={false}
+      />
+      <SafeAreaView style={styles.safeArea}>
+        {!fromFirstPlay && (
+          <View style={styles.header}>
+            <GlassButton
+              title={t('common.back')}
+              onPress={() => navigation.goBack()}
+              variant="secondary"
+              style={styles.backButton}
+            />
+          </View>
+        )}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.titleContainer}>
+            <ChromeText size={32} color="cyan" glowPulse={false}>
+              {t('instructions.title')}
+            </ChromeText>
           </View>
 
-          <Text style={[styles.text, { marginTop: 16, marginBottom: 12 }]}>
-            {t('instructions.colorShowsLifetime')}
-          </Text>
-          <View style={styles.colorRow}>
-            <View style={[styles.colorSwatch, { backgroundColor: '#ff4444' }]} />
-            <Text style={styles.colorLabel}>{t('instructions.new')}</Text>
-            <View style={[styles.colorSwatch, { backgroundColor: '#ff8844' }]} />
-            <Text style={styles.colorLabel}>{t('instructions.half')}</Text>
-            <View style={[styles.colorSwatch, { backgroundColor: '#ffcc44' }]} />
-            <Text style={styles.colorLabel}>{t('instructions.fading')}</Text>
+          {/* Goal */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('instructions.goal')}</Text>
+            <Text style={styles.text}>{t('instructions.goalText')}</Text>
           </View>
-        </View>
 
-        {/* Boosters */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('instructions.boosters')}</Text>
-          <Text style={styles.text}>{t('instructions.boostersText')}</Text>
-          <View style={styles.boosterRow}>
-            <View style={styles.boosterIcon}>
-              <View style={styles.plusH} />
-              <View style={styles.plusV} />
-            </View>
-            <Text style={styles.boosterText}>{t('instructions.bonusPoints')}</Text>
+          {/* Controls */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('instructions.controlsTitle')}</Text>
+            <Text style={styles.text}>{t('instructions.controlsText')}</Text>
           </View>
-          <View style={styles.boosterRow}>
-            <View style={styles.boosterIcon}>
-              <View style={styles.shieldOuter}>
-                <View style={styles.shieldInner} />
+
+          {/* Enemies */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('instructions.enemies')}</Text>
+            <Text style={[styles.text, { marginBottom: 12 }]}>{t('instructions.shapeShowsSpeed')}</Text>
+            <View style={styles.colorRow}>
+              <View style={[styles.enemyShape, styles.circle]} />
+              <Text style={styles.colorLabel}>{t('instructions.slow')}</Text>
+              <View style={[styles.enemyShape, styles.diamond]} />
+              <Text style={styles.colorLabel}>{t('instructions.medium')}</Text>
+              <View style={styles.triangleSmall}>
+                <View style={styles.triangleIcon} />
               </View>
+              <Text style={styles.colorLabel}>{t('instructions.fast')}</Text>
             </View>
-            <Text style={styles.boosterText}>{t('instructions.shield')}</Text>
-          </View>
-          <View style={styles.boosterRow}>
-            <View style={styles.boosterIcon}>
-              <Text style={styles.multiplierIcon}>x3</Text>
+
+            <Text style={[styles.text, { marginTop: 16, marginBottom: 12 }]}>
+              {t('instructions.colorShowsLifetime')}
+            </Text>
+            <View style={styles.colorRow}>
+              <View style={[styles.colorSwatch, { backgroundColor: COLORS.neonMagenta }]} />
+              <Text style={styles.colorLabel}>{t('instructions.new')}</Text>
+              <View style={[styles.colorSwatch, { backgroundColor: '#ff8844' }]} />
+              <Text style={styles.colorLabel}>{t('instructions.half')}</Text>
+              <View style={[styles.colorSwatch, { backgroundColor: '#ffcc44' }]} />
+              <Text style={styles.colorLabel}>{t('instructions.fading')}</Text>
             </View>
-            <Text style={styles.boosterText}>{t('instructions.multiplier')}</Text>
           </View>
-        </View>
 
-        {/* Tips */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('instructions.tips')}</Text>
-          <Text style={styles.text}>
-            {'\u2022'} {t('instructions.tip1')}
-            {'\n'}
-            {'\u2022'} {t('instructions.tip2')}
-            {'\n'}
-            {'\u2022'} {t('instructions.tip3')}
-            {'\n'}
-            {'\u2022'} {t('instructions.tip4')}
-          </Text>
-        </View>
+          {/* Boosters */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('instructions.boosters')}</Text>
+            <Text style={styles.text}>{t('instructions.boostersText')}</Text>
+            <View style={styles.boosterRow}>
+              <View style={styles.boosterIcon}>
+                <View style={styles.plusH} />
+                <View style={styles.plusV} />
+              </View>
+              <Text style={styles.boosterText}>{t('instructions.bonusPoints')}</Text>
+            </View>
+            <View style={styles.boosterRow}>
+              <View style={styles.boosterIcon}>
+                <View style={styles.shieldOuter}>
+                  <View style={styles.shieldInner} />
+                </View>
+              </View>
+              <Text style={styles.boosterText}>{t('instructions.shield')}</Text>
+            </View>
+            <View style={styles.boosterRow}>
+              <View style={styles.boosterIcon}>
+                <Text style={styles.multiplierIcon}>x3</Text>
+              </View>
+              <Text style={styles.boosterText}>{t('instructions.multiplier')}</Text>
+            </View>
+          </View>
 
-        <Pressable
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={handleContinue}
-        >
-          <Text style={styles.buttonText}>
-            {fromFirstPlay ? t('instructions.startPlaying') : t('instructions.gotIt')}
-          </Text>
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Tips */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('instructions.tips')}</Text>
+            <Text style={styles.text}>
+              {'\u2022'} {t('instructions.tip1')}
+              {'\n'}
+              {'\u2022'} {t('instructions.tip2')}
+              {'\n'}
+              {'\u2022'} {t('instructions.tip3')}
+              {'\n'}
+              {'\u2022'} {t('instructions.tip4')}
+            </Text>
+          </View>
+
+          <GlassButton
+            title={fromFirstPlay ? t('instructions.startPlaying') : t('instructions.gotIt')}
+            onPress={handleContinue}
+            variant="primary"
+            style={styles.actionButton}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundDeep,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -148,33 +167,30 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButton: {
-    width: 80,
-  },
-  backText: {
-    fontSize: 16,
-    color: COLORS.menuAccent,
+    minWidth: 100,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   scrollContent: {
     padding: 24,
     paddingBottom: 40,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.player,
-    textAlign: 'center',
+  titleContainer: {
+    alignItems: 'center',
     marginBottom: 24,
   },
   section: {
     marginBottom: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(26, 26, 46, 0.8)',
     borderRadius: 12,
     padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(157, 78, 221, 0.3)',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.score,
+    color: COLORS.neonCyan,
     marginBottom: 12,
     letterSpacing: 2,
   },
@@ -195,12 +211,20 @@ const styles = StyleSheet.create({
   },
   circle: {
     borderRadius: 14,
-    backgroundColor: '#ff4444',
+    backgroundColor: COLORS.neonMagenta,
+    shadowColor: COLORS.neonMagenta,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
   },
   diamond: {
-    backgroundColor: '#ff4444',
+    backgroundColor: COLORS.neonMagenta,
     borderRadius: 4,
     transform: [{ rotate: '45deg' }, { scale: 0.85 }],
+    shadowColor: COLORS.neonMagenta,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
   },
   triangleSmall: {
     width: 28,
@@ -216,7 +240,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 24,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderBottomColor: '#ff4444',
+    borderBottomColor: COLORS.neonMagenta,
   },
   // Color swatches
   colorRow: {
@@ -229,6 +253,10 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
+    shadowColor: COLORS.neonMagenta,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
   },
   colorLabel: {
     fontSize: 14,
@@ -249,6 +277,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#44ff44',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
   },
   plusH: {
     position: 'absolute',
@@ -295,22 +327,9 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     flex: 1,
   },
-  // Button
-  button: {
-    backgroundColor: COLORS.menuAccent,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    alignItems: 'center',
+  // Action Button
+  actionButton: {
     marginTop: 16,
-  },
-  buttonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    alignSelf: 'center',
   },
 });
