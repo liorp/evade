@@ -5,6 +5,12 @@ export const GAME = {
   // Score
   POINTS_PER_ENEMY: 10, // base points per enemy despawned
 
+  // Speed scoring multipliers based on enemy count
+  SPEED_SCORE_THRESHOLD_MEDIUM: 4, // 4+ enemies = 1.5x
+  SPEED_SCORE_THRESHOLD_HIGH: 7, // 7+ enemies = 2.0x
+  SPEED_SCORE_MULTIPLIER_MEDIUM: 1.5,
+  SPEED_SCORE_MULTIPLIER_HIGH: 2.0,
+
   // Difficulty scaling (ms for intervals, px/s for speed)
   INITIAL_SPAWN_INTERVAL: 2000,
   MIN_SPAWN_INTERVAL: 300,
