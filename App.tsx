@@ -2,6 +2,9 @@ import './src/i18n';
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { adManager } from './src/ads/adManager';
+import { usePurchaseStore } from './src/state/purchaseStore';
+import { useAdStore } from './src/state/adStore';
+import { iapManager } from './src/iap/iapManager';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -23,9 +26,24 @@ type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  const { adsRemoved } = usePurchaseStore();
+  const { setAdsRemoved } = useAdStore();
+
   useEffect(() => {
     adManager.initialize();
   }, []);
+
+  useEffect(() => {
+    // Sync purchase state to ad store
+    setAdsRemoved(adsRemoved);
+
+    // Initialize IAP
+    iapManager.initialize();
+
+    return () => {
+      iapManager.disconnect();
+    };
+  }, [adsRemoved, setAdsRemoved]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
