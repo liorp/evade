@@ -174,15 +174,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <SynthwaveBackground
-        showStars
-        showGrid
-        showSun
-        showHalos
-        sunPosition={0.5}
-        gridOpacity={0.4}
-        halosVariant="centered"
-      />
+      <SynthwaveBackground showStars showSun showHalos sunPosition={0.5} halosVariant="centered" />
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
@@ -286,11 +278,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
+    overflow: 'visible',
   },
   backButton: {
     minWidth: 80,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   balanceContainer: {
     flexDirection: 'row',

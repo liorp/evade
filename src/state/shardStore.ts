@@ -16,6 +16,7 @@ interface ShardState {
   canWatchRewardedAd: () => boolean;
   recordRewardedAd: () => void;
   resetDailyAdCount: () => void;
+  reset: () => void;
 }
 
 const SHARDS_PER_100_POINTS = 1;
@@ -97,6 +98,15 @@ export const useShardStore = create<ShardState>()(
           set({ rewardedAdsToday: 0, lastRewardedAdDate: today });
         }
       },
+
+      reset: () =>
+        set({
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          lastRewardedAdDate: null,
+          rewardedAdsToday: 0,
+        }),
     }),
     {
       name: 'evade-shards',

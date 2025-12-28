@@ -1,47 +1,44 @@
 import type React from 'react';
 import { StyleSheet, View } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import { COLORS } from '../const/colors';
 import { GeometricHalos } from './GeometricHalos';
 import { HorizonSun } from './HorizonSun';
-import { PerspectiveGrid } from './PerspectiveGrid';
 import { StarField } from './StarField';
 
 interface SynthwaveBackgroundProps {
   showStars?: boolean;
-  showGrid?: boolean;
   showSun?: boolean;
   showHalos?: boolean;
   sunPosition?: number;
-  gridOpacity?: number;
   halosVariant?: 'menu' | 'centered';
-  gridAnimated?: boolean;
+  parallaxX?: SharedValue<number>;
+  parallaxY?: SharedValue<number>;
 }
 
 export const SynthwaveBackground: React.FC<SynthwaveBackgroundProps> = ({
   showStars = true,
-  showGrid = true,
   showSun = true,
   showHalos = true,
   sunPosition = 0.4,
-  gridOpacity = 0.6,
   halosVariant = 'menu',
-  gridAnimated = true,
+  parallaxX,
+  parallaxY,
 }) => {
   return (
     <View style={styles.container} pointerEvents="none">
       {/* Layer 1: Base background */}
       <View style={styles.baseBackground} />
 
-      {/* Layer 2: Stars */}
-      {showStars && <StarField count={50} />}
+      {/* Layer 2: Stars (slowest parallax - furthest layer) */}
+      {showStars && <StarField count={50} parallaxX={parallaxX} parallaxY={parallaxY} />}
 
-      {/* Layer 3: Horizon Sun */}
-      {showSun && <HorizonSun position={sunPosition} size={200} />}
+      {/* Layer 3: Horizon Sun (faster parallax - closer layer) */}
+      {showSun && (
+        <HorizonSun position={sunPosition} size={200} parallaxX={parallaxX} parallaxY={parallaxY} />
+      )}
 
-      {/* Layer 4: Perspective Grid */}
-      {showGrid && <PerspectiveGrid opacity={gridOpacity} animated={gridAnimated} />}
-
-      {/* Layer 5: Geometric Halos */}
+      {/* Layer 4: Geometric Halos */}
       {showHalos && <GeometricHalos variant={halosVariant} />}
     </View>
   );

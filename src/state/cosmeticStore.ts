@@ -36,6 +36,7 @@ interface CosmeticState {
   purchaseItem: (category: CosmeticCategory, id: string) => void;
   equipItem: (category: CosmeticCategory, id: string) => void;
   isOwned: (category: CosmeticCategory, id: string) => boolean;
+  reset: () => void;
 }
 
 export const useCosmeticStore = create<CosmeticState>()(
@@ -124,6 +125,24 @@ export const useCosmeticStore = create<CosmeticState>()(
             return state.ownedBackgroundThemes.includes(id as BackgroundTheme);
         }
       },
+
+      reset: () =>
+        set({
+          ownedColors: ['green'],
+          ownedShapes: ['circle'],
+          ownedTrails: ['none'],
+          ownedGlows: ['none'],
+          ownedEnemyThemes: ['classic'],
+          ownedBackgroundThemes: ['dark'],
+          equipped: {
+            playerColor: 'green',
+            playerShape: 'circle',
+            playerTrail: 'none',
+            playerGlow: 'none',
+            enemyTheme: 'classic',
+            backgroundTheme: 'dark',
+          },
+        }),
     }),
     {
       name: 'evade-cosmetics',

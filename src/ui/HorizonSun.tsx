@@ -1,21 +1,37 @@
 import type React from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import Svg, { ClipPath, Defs, Ellipse, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { COLORS, GRADIENTS } from '../const/colors';
 
 interface HorizonSunProps {
   position?: number; // 0-1, vertical position (0 = top, 1 = bottom)
   size?: number;
+  parallaxX?: SharedValue<number>;
+  parallaxY?: SharedValue<number>;
 }
 
-export const HorizonSun: React.FC<HorizonSunProps> = ({ position = 0.4, size = 200 }) => {
+export const HorizonSun: React.FC<HorizonSunProps> = ({
+  position = 0.4,
+  size = 200,
+  parallaxX,
+  parallaxY,
+}) => {
   const { width, height } = useWindowDimensions();
   const sunY = height * position;
   const bands = 8;
   const bandHeight = size / (bands * 2);
 
+  // Sun moves opposite to tilt at 0.4x speed (distant but closer than stars)
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: -(parallaxX?.value ?? 0) * 0.4 },
+      { translateY: -(parallaxY?.value ?? 0) * 0.4 },
+    ],
+  }));
+
   return (
-    <View style={styles.container} pointerEvents="none">
+    <Animated.View style={[styles.container, animatedStyle]} pointerEvents="none">
       <Svg width={width} height={size} style={{ position: 'absolute', top: sunY - size / 2 }}>
         <Defs>
           <LinearGradient id="sunGradient" x1="0" y1="0" x2="0" y2="1">
@@ -50,7 +66,7 @@ export const HorizonSun: React.FC<HorizonSunProps> = ({ position = 0.4, size = 2
           />
         ))}
       </Svg>
-    </View>
+    </Animated.View>
   );
 };
 

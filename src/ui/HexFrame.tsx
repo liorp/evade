@@ -96,6 +96,7 @@ export const HexFrame: React.FC<HexFrameProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
+    overflow: 'visible',
   },
   frame: {
     position: 'absolute',

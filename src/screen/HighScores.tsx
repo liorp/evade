@@ -73,14 +73,7 @@ export const HighScoresScreen: React.FC<HighScoresProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <SynthwaveBackground
-        showStars
-        showGrid
-        showSun
-        showHalos={false}
-        sunPosition={0.35}
-        gridOpacity={0.4}
-      />
+      <SynthwaveBackground showStars showSun showHalos={false} sunPosition={0.35} />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <GlassButton
@@ -184,11 +177,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    overflow: 'visible',
   },
   backButton: {
-    minWidth: 100,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    minWidth: 80,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   headerSpacer: {
     width: 100,

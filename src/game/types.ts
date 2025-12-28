@@ -13,7 +13,6 @@ export interface Enemy {
   spawnTime: number;
   speedTier: SpeedTier;
   speed: number;
-  dodgeCounted?: boolean; // Track if close dodge was already counted
 }
 
 export type BoosterType = 'plus' | 'shield' | 'multiplier';

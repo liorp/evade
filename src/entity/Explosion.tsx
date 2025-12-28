@@ -16,7 +16,7 @@ interface ExplosionProps {
 }
 
 const PARTICLE_COUNT = 20;
-const ANIMATION_DURATION = 3000;
+const ANIMATION_DURATION = 1500;
 
 interface ParticleData {
   angle: number;

@@ -1,8 +1,9 @@
 import type React from 'react';
 import { useEffect, useMemo } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
+  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -54,7 +55,13 @@ const StarParticle: React.FC<{ star: Star }> = ({ star }) => {
   );
 };
 
-export const StarField: React.FC<{ count?: number }> = ({ count = 50 }) => {
+interface StarFieldProps {
+  count?: number;
+  parallaxX?: SharedValue<number>;
+  parallaxY?: SharedValue<number>;
+}
+
+export const StarField: React.FC<StarFieldProps> = ({ count = 50, parallaxX, parallaxY }) => {
   const { width, height } = useWindowDimensions();
 
   const stars = useMemo(() => {
@@ -68,12 +75,20 @@ export const StarField: React.FC<{ count?: number }> = ({ count = 50 }) => {
     }));
   }, [count, width, height]);
 
+  // Stars move opposite to tilt at 0.3x speed (distant = slow, inverted)
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: -(parallaxX?.value ?? 0) * 0.3 },
+      { translateY: -(parallaxY?.value ?? 0) * 0.3 },
+    ],
+  }));
+
   return (
-    <View style={styles.container} pointerEvents="none">
+    <Animated.View style={[styles.container, animatedStyle]} pointerEvents="none">
       {stars.map((star) => (
         <StarParticle key={star.id} star={star} />
       ))}
-    </View>
+    </Animated.View>
   );
 };
 

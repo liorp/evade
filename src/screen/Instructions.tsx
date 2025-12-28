@@ -33,14 +33,7 @@ export const InstructionsScreen: React.FC<InstructionsProps> = ({ navigation, ro
 
   return (
     <View style={styles.container}>
-      <SynthwaveBackground
-        showStars
-        showGrid
-        showSun={false}
-        showHalos={false}
-        gridOpacity={0.3}
-        gridAnimated={false}
-      />
+      <SynthwaveBackground showStars showSun={false} showHalos={false} />
       <SafeAreaView style={styles.safeArea}>
         {!fromFirstPlay && (
           <View style={styles.header}>
@@ -169,9 +162,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButton: {
-    minWidth: 100,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    minWidth: 80,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
   scrollContent: {
     padding: 24,
@@ -180,6 +173,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: 'center',
     marginBottom: 24,
+    overflow: 'visible',
   },
   section: {
     marginBottom: 24,
@@ -233,6 +227,10 @@ const styles = StyleSheet.create({
     height: 28,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: COLORS.neonMagenta,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
   },
   triangleIcon: {
     width: 0,

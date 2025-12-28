@@ -4,6 +4,5 @@ export { GlassButton } from './GlassButton';
 export { HexFrame } from './HexFrame';
 export { HorizonSun } from './HorizonSun';
 export { NeonToggle } from './NeonToggle';
-export { PerspectiveGrid } from './PerspectiveGrid';
 export { StarField } from './StarField';
 export { SynthwaveBackground } from './SynthwaveBackground';

@@ -13,7 +13,7 @@ interface GameOverModalProps {
   onMenu: () => void;
 }
 
-const MODAL_WIDTH = 300;
+const MODAL_WIDTH = 340;
 const MODAL_HEIGHT = 380;
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({
@@ -80,20 +80,22 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.pauseOverlay,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
-    elevation: 1000,
   },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 8,
+    overflow: 'visible',
   },
   newBestContainer: {
     marginTop: 4,
+    overflow: 'visible',
   },
   scoreContainer: {
     marginVertical: 12,
+    overflow: 'visible',
   },
   shardsText: {
     fontSize: 18,
@@ -104,10 +106,9 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     width: '100%',
     alignItems: 'center',
-    gap: 10,
-    marginTop: 4,
+    gap: 12,
   },
   button: {
-    minWidth: 180,
+    minWidth: 260,
   },
 });

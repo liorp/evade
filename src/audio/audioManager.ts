@@ -7,10 +7,21 @@ class AudioManager {
   private musicEnabled = true;
   private sfxEnabled = true;
   private isLoaded = false;
+  private loadingPromise: Promise<void> | null = null;
 
   async load(): Promise<void> {
     if (this.isLoaded) return;
 
+    // Prevent concurrent load calls - return existing promise if loading
+    if (this.loadingPromise) {
+      return this.loadingPromise;
+    }
+
+    this.loadingPromise = this.doLoad();
+    return this.loadingPromise;
+  }
+
+  private async doLoad(): Promise<void> {
     try {
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
@@ -41,12 +52,17 @@ class AudioManager {
       this.isLoaded = true;
     } catch (error) {
       console.warn('Audio loading failed:', error);
+      this.loadingPromise = null; // Allow retry on failure
     }
   }
 
   async playMusic(): Promise<void> {
     if (!this.musicEnabled || !this.backgroundMusic) return;
     try {
+      const status = await this.backgroundMusic.getStatusAsync();
+      // Don't restart if already playing
+      if (status.isLoaded && status.isPlaying) return;
+
       await this.backgroundMusic.setPositionAsync(0);
       await this.backgroundMusic.playAsync();
     } catch (error) {
@@ -83,10 +99,10 @@ class AudioManager {
     }
   }
 
-  setMusicEnabled(enabled: boolean): void {
+  async setMusicEnabled(enabled: boolean): Promise<void> {
     this.musicEnabled = enabled;
     if (!enabled) {
-      this.stopMusic();
+      await this.stopMusic();
     }
   }
 

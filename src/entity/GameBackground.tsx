@@ -1,6 +1,7 @@
 import type React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BACKGROUND_THEMES, type BackgroundTheme } from '../cosmetics/constants';
+import { StarField } from '../ui/StarField';
 
 interface GameBackgroundProps {
   theme?: BackgroundTheme;
@@ -11,6 +12,9 @@ export const GameBackground: React.FC<GameBackgroundProps> = ({ theme = 'dark' }
 
   return (
     <View style={[styles.container, { backgroundColor: themeData.colors.bg }]}>
+      {/* Starry background */}
+      <StarField count={40} />
+
       {/* Subtle gradient overlay for depth */}
       <View style={[styles.gradient, { backgroundColor: themeData.colors.accent }]} />
 

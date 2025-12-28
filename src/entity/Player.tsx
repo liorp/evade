@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 import {
@@ -24,7 +23,6 @@ interface PlayerProps {
   x: SharedValue<number>;
   y: SharedValue<number>;
   hasShield?: boolean;
-  dodgeFlashTrigger?: number;
   // Cosmetic props
   shape?: PlayerShape;
   colorId?: PlayerColorId;
@@ -36,7 +34,6 @@ export const Player: React.FC<PlayerProps> = ({
   x,
   y,
   hasShield = false,
-  dodgeFlashTrigger = 0,
   shape = 'circle',
   colorId = 'green',
   trail = 'none',
@@ -47,8 +44,6 @@ export const Player: React.FC<PlayerProps> = ({
   const glowColor = colorData.glowHex;
 
   const shieldPulse = useSharedValue(1);
-  const dodgeFlashOpacity = useSharedValue(0);
-  const dodgeFlashScale = useSharedValue(1);
   const glowPulse = useSharedValue(1);
   const rgbProgress = useSharedValue(0);
 
@@ -73,20 +68,6 @@ export const Player: React.FC<PlayerProps> = ({
     }
   }, [glow, glowPulse, rgbProgress]);
 
-  // Dodge flash animation
-  useEffect(() => {
-    if (dodgeFlashTrigger > 0) {
-      dodgeFlashOpacity.value = withSequence(
-        withTiming(0.8, { duration: 50 }),
-        withTiming(0, { duration: 200 }),
-      );
-      dodgeFlashScale.value = withSequence(
-        withTiming(1.5, { duration: 100 }),
-        withTiming(1, { duration: 150 }),
-      );
-    }
-  }, [dodgeFlashTrigger, dodgeFlashOpacity, dodgeFlashScale]);
-
   // Shield animation
   useEffect(() => {
     if (hasShield) {
@@ -106,11 +87,6 @@ export const Player: React.FC<PlayerProps> = ({
   const shieldStyle = useAnimatedStyle(() => ({
     transform: [{ scale: shieldPulse.value }],
     opacity: hasShield ? 0.6 : 0,
-  }));
-
-  const dodgeFlashStyle = useAnimatedStyle(() => ({
-    opacity: dodgeFlashOpacity.value,
-    transform: [{ scale: dodgeFlashScale.value }],
   }));
 
   const glowStyle = useAnimatedStyle(() => {
@@ -162,8 +138,6 @@ export const Player: React.FC<PlayerProps> = ({
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
-      {/* Dodge flash ring */}
-      <Animated.View style={[styles.dodgeFlash, dodgeFlashStyle]} />
       {/* Shield */}
       {hasShield && <Animated.View style={[styles.shield, shieldStyle]} />}
       {/* Glow */}
@@ -227,14 +201,5 @@ const styles = StyleSheet.create({
   star: {
     borderRadius: GAME.PLAYER_RADIUS * 0.2,
     transform: [{ rotate: '45deg' }],
-  },
-  dodgeFlash: {
-    position: 'absolute',
-    width: GAME.PLAYER_RADIUS * 3.5,
-    height: GAME.PLAYER_RADIUS * 3.5,
-    borderRadius: GAME.PLAYER_RADIUS * 1.75,
-    borderWidth: 3,
-    borderColor: '#ffffff',
-    backgroundColor: 'transparent',
   },
 });
