@@ -125,3 +125,7 @@ Multiple specialized Zustand stores with persistence:
 - **Immutable state updates** in Zustand stores
 - **Event emitter pattern** for game events
 - **Handedness support** - Left/right-handed play modes
+
+## Development Preferences
+
+- **Worktrees**: Use `.worktrees/` directory (project-local, hidden)
