@@ -55,4 +55,12 @@ export const GAME = {
   BOOSTER_SHIELD_DURATION: 3000, // ms - shield lasts 3 seconds
   BOOSTER_MULTIPLIER_DURATION: 5000, // ms - multiplier lasts 5 seconds
   BOOSTER_MULTIPLIER_VALUE: 3, // 3x points
+
+  // Debuffs
+  DEBUFF_RADIUS: 28,
+  DEBUFF_SPAWN_INTERVAL: 12000,
+  DEBUFF_LIFETIME: 5000,
+  DEBUFF_UNLOCK_TIME: 30000,
+  DEBUFF_ENLARGE_DURATION: 3000,
+  DEBUFF_ENLARGE_SCALE: 1.2,
 } as const;

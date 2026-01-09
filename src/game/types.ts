@@ -24,6 +24,15 @@ export interface Booster {
   spawnTime: number;
 }
 
+export type DebuffType = 'enlarge';
+
+export interface Debuff {
+  id: string;
+  position: Position;
+  type: DebuffType;
+  spawnTime: number;
+}
+
 export interface ActiveEffects {
   shield: {
     active: boolean;
@@ -33,6 +42,11 @@ export interface ActiveEffects {
     active: boolean;
     endTime: number;
     value: number;
+  };
+  enlarge: {
+    active: boolean;
+    endTime: number;
+    scale: number;
   };
 }
 
@@ -46,10 +60,12 @@ export interface GameState {
   playerPosition: Position;
   enemies: Enemy[];
   boosters: Booster[];
+  debuffs: Debuff[];
   activeEffects: ActiveEffects;
   startTime: number;
   lastSpawnTime: number;
   lastBoosterSpawnTime: number;
+  lastDebuffSpawnTime: number;
   screenWidth: number;
   screenHeight: number;
 }

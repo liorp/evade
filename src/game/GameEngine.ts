@@ -45,13 +45,16 @@ export class GameEngine {
       playerPosition: { x: screenWidth / 2, y: screenHeight / 2 },
       enemies: [],
       boosters: [],
+      debuffs: [],
       activeEffects: {
         shield: { active: false, endTime: 0 },
         multiplier: { active: false, endTime: 0, value: 1 },
+        enlarge: { active: false, endTime: 0, scale: 1 },
       },
       startTime: 0,
       lastSpawnTime: 0,
       lastBoosterSpawnTime: 0,
+      lastDebuffSpawnTime: 0,
       screenWidth,
       screenHeight,
     };

@@ -71,6 +71,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const [activeEffects, setActiveEffects] = useState<ActiveEffects>({
     shield: { active: false, endTime: 0 },
     multiplier: { active: false, endTime: 0, value: 1 },
+    enlarge: { active: false, endTime: 0, scale: 1 },
   });
   const [screenSize, _setScreenSize] = useState(Dimensions.get('window'));
   const [currentTime, setCurrentTime] = useState(performance.now());
@@ -333,6 +334,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     setActiveEffects({
       shield: { active: false, endTime: 0 },
       multiplier: { active: false, endTime: 0, value: 1 },
+      enlarge: { active: false, endTime: 0, scale: 1 },
     });
     setPassedBest(false);
     setShardsEarned(0);
