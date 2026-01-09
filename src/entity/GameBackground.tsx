@@ -15,9 +15,6 @@ export const GameBackground: React.FC<GameBackgroundProps> = ({ theme = 'dark' }
       {/* Starry background */}
       <StarField count={40} />
 
-      {/* Subtle gradient overlay for depth */}
-      <View style={[styles.gradient, { backgroundColor: themeData.colors.accent }]} />
-
       {theme === 'ocean' && <View style={styles.oceanWave} />}
     </View>
   );
@@ -27,14 +24,6 @@ const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
     zIndex: -1,
-  },
-  gradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '40%',
-    opacity: 0.3,
   },
   oceanWave: {
     position: 'absolute',
