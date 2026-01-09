@@ -38,7 +38,7 @@ export const InstructionsScreen: React.FC<InstructionsProps> = ({ navigation, ro
         {!fromFirstPlay && (
           <View style={styles.header}>
             <GlassButton
-              title={t('common.back')}
+              title="←"
               onPress={() => navigation.goBack()}
               variant="secondary"
               style={styles.backButton}
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButton: {
-    minWidth: 80,
+    minWidth: 44,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },

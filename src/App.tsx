@@ -86,7 +86,7 @@ export default function App() {
           <Stack.Screen
             name="Settings"
             component={SettingsScreen}
-            options={{ animation: 'slide_from_bottom' }}
+            options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen
             name="HighScores"

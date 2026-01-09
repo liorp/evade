@@ -118,7 +118,7 @@ export const SettingsScreen: React.FC<SettingsProps> = ({ navigation }) => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <GlassButton
-            title={t('common.back')}
+            title="←"
             onPress={() => navigation.goBack()}
             variant="secondary"
             style={styles.backButton}
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   backButton: {
-    minWidth: 80,
+    minWidth: 44,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
