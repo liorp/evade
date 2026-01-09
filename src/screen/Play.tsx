@@ -19,6 +19,7 @@ import { audioManager } from '../audio/audioManager';
 import { COLORS } from '../const/colors';
 import { PLAYER_COLORS } from '../cosmetics/constants';
 import { Booster } from '../entity/Booster';
+import { Debuff } from '../entity/Debuff';
 import { Enemy } from '../entity/Enemy';
 import { Explosion } from '../entity/Explosion';
 import { GameBackground } from '../entity/GameBackground';
@@ -27,7 +28,12 @@ import { ContinueModal } from '../game/ContinueModal';
 import { GAME } from '../game/constants';
 import { GameEngine, type GameOverData } from '../game/GameEngine';
 import { GameOverModal } from '../game/GameOverModal';
-import type { ActiveEffects, Booster as BoosterType, Enemy as EnemyType } from '../game/types';
+import type {
+  ActiveEffects,
+  Booster as BoosterType,
+  Debuff as DebuffType,
+  Enemy as EnemyType,
+} from '../game/types';
 import { useAdStore } from '../state/adStore';
 import { useCosmeticStore } from '../state/cosmeticStore';
 import { useHighscoreStore } from '../state/highscoreStore';
@@ -68,6 +74,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const [_pendingGameOver, setPendingGameOver] = useState(false);
   const [enemies, setEnemies] = useState<EnemyType[]>([]);
   const [boosters, setBoosters] = useState<BoosterType[]>([]);
+  const [debuffs, setDebuffs] = useState<DebuffType[]>([]);
   const [activeEffects, setActiveEffects] = useState<ActiveEffects>({
     shield: { active: false, endTime: 0 },
     multiplier: { active: false, endTime: 0, value: 1 },
@@ -95,6 +102,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   const gameEngine = useRef<GameEngine | null>(null);
   const newEnemyIds = useRef<Set<string>>(new Set());
   const newBoosterIds = useRef<Set<string>>(new Set());
+  const newDebuffIds = useRef<Set<string>>(new Set());
 
   const handleActualGameOver = useCallback(async () => {
     setIsGameOver(true);
@@ -205,8 +213,16 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
           }
         });
 
+        // Track new debuffs for fade-in
+        state.debuffs.forEach((d) => {
+          if (!debuffs.find((existing) => existing.id === d.id)) {
+            newDebuffIds.current.add(d.id);
+          }
+        });
+
         setEnemies([...state.enemies]);
         setBoosters([...state.boosters]);
+        setDebuffs([...state.debuffs]);
         setActiveEffects({ ...state.activeEffects });
         setCurrentTime(now);
 
@@ -214,6 +230,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
         setTimeout(() => {
           newEnemyIds.current.clear();
           newBoosterIds.current.clear();
+          newDebuffIds.current.clear();
         }, 50);
       }
     }, 16);
@@ -225,6 +242,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
   }, [
     boosters.find,
     canUseContinue,
+    debuffs.find,
     enemies.find,
     equipped.playerColor,
     handedness,
@@ -331,6 +349,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     setScore(0);
     setEnemies([]);
     setBoosters([]);
+    setDebuffs([]);
     setActiveEffects({
       shield: { active: false, endTime: 0 },
       multiplier: { active: false, endTime: 0, value: 1 },
@@ -345,6 +364,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
     didUseContinueRef.current = false;
     newEnemyIds.current.clear();
     newBoosterIds.current.clear();
+    newDebuffIds.current.clear();
     playerX.value = screenSize.width / 2;
     playerY.value = screenSize.height / 2;
     gameEngine.current?.start();
@@ -386,6 +406,11 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
               <Text style={styles.multiplierIcon}>x{activeEffects.multiplier.value}</Text>
             </View>
           )}
+          {activeEffects.enlarge.active && (
+            <View style={styles.enlargeBadge}>
+              <Text style={styles.enlargeIcon}>{'↑'}</Text>
+            </View>
+          )}
         </View>
       </SafeAreaView>
 
@@ -401,6 +426,22 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
             type={booster.type}
             ttlPercent={ttlPercent}
             isNew={newBoosterIds.current.has(booster.id)}
+          />
+        );
+      })}
+
+      {/* Debuffs */}
+      {debuffs.map((debuff) => {
+        const age = currentTime - debuff.spawnTime;
+        const ttlPercent = Math.max(0, 1 - age / GAME.DEBUFF_LIFETIME);
+        return (
+          <Debuff
+            key={debuff.id}
+            x={debuff.position.x}
+            y={debuff.position.y}
+            type={debuff.type}
+            ttlPercent={ttlPercent}
+            isNew={newDebuffIds.current.has(debuff.id)}
           />
         );
       })}
@@ -428,6 +469,7 @@ export const PlayScreen: React.FC<PlayScreenProps> = ({ navigation }) => {
           x={playerX}
           y={playerY}
           hasShield={activeEffects.shield.active}
+          scale={activeEffects.enlarge.active ? activeEffects.enlarge.scale : 1}
           shape={equipped.playerShape}
           colorId={equipped.playerColor}
           trail={equipped.playerTrail}
@@ -543,6 +585,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.chromeGold,
+  } as TextStyle,
+  enlargeBadge: {
+    backgroundColor: 'rgba(255, 68, 68, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ff4444',
+    shadowColor: '#ff4444',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 4,
+  } as ViewStyle,
+  enlargeIcon: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#ff4444',
   } as TextStyle,
   startOverlay: {
     ...StyleSheet.absoluteFillObject,
