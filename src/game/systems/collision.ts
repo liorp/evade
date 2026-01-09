@@ -1,5 +1,5 @@
 import { GAME } from '../constants';
-import type { Booster, Enemy, Position } from '../types';
+import type { Booster, Debuff, Enemy, Position } from '../types';
 
 function distance(a: Position, b: Position): number {
   const dx = a.x - b.x;
@@ -28,6 +28,22 @@ export function checkBoosterCollision(
   for (const booster of boosters) {
     if (distance(playerPosition, booster.position) < collisionDistance) {
       return booster;
+    }
+  }
+
+  return null;
+}
+
+export function checkDebuffCollision(
+  playerPosition: Position,
+  debuffs: Debuff[],
+  playerRadius: number = GAME.PLAYER_RADIUS,
+): Debuff | null {
+  const collisionDistance = playerRadius + GAME.DEBUFF_RADIUS;
+
+  for (const debuff of debuffs) {
+    if (distance(playerPosition, debuff.position) < collisionDistance) {
+      return debuff;
     }
   }
 
