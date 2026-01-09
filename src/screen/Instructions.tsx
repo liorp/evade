@@ -121,6 +121,23 @@ export const InstructionsScreen: React.FC<InstructionsProps> = ({ navigation, ro
             </View>
           </View>
 
+          {/* Debuffs */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('instructions.debuffs')}</Text>
+            <Text style={styles.text}>{t('instructions.debuffsText')}</Text>
+            <View style={styles.boosterRow}>
+              <View style={styles.debuffIcon}>
+                <View style={styles.expandIcon}>
+                  <View style={[styles.expandArrow, styles.expandArrowUp]} />
+                  <View style={[styles.expandArrow, styles.expandArrowDown]} />
+                  <View style={[styles.expandArrow, styles.expandArrowLeft]} />
+                  <View style={[styles.expandArrow, styles.expandArrowRight]} />
+                </View>
+              </View>
+              <Text style={styles.boosterText}>{t('instructions.enlarge')}</Text>
+            </View>
+          </View>
+
           {/* Tips */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('instructions.tips')}</Text>
@@ -326,6 +343,52 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.text,
     flex: 1,
+  },
+  // Debuff icon
+  debuffIcon: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#ff4444',
+    borderRadius: 8,
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#ff4444',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+  },
+  expandIcon: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  expandArrow: {
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
+    borderBottomWidth: 6,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#000',
+  },
+  expandArrowUp: {
+    top: 0,
+  },
+  expandArrowDown: {
+    bottom: 0,
+    transform: [{ rotate: '180deg' }],
+  },
+  expandArrowLeft: {
+    left: 0,
+    transform: [{ rotate: '-90deg' }],
+  },
+  expandArrowRight: {
+    right: 0,
+    transform: [{ rotate: '90deg' }],
   },
   // Action Button
   actionButton: {
