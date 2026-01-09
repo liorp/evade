@@ -2,6 +2,7 @@ import { GAME } from '../constants';
 import type {
   Booster,
   BoosterType,
+  Debuff,
   Enemy,
   Handedness,
   Position,
@@ -243,11 +244,52 @@ export function getBoosterSpawnPosition(
   return { x, y };
 }
 
+export function getDebuffSpawnPosition(
+  screenWidth: number,
+  screenHeight: number,
+  playerPosition: Position,
+  boosterPositions: Position[],
+): Position {
+  const margin = 80;
+  const minDistFromPlayer = 150;
+  const minDistFromBooster = 150;
+
+  let x: number, y: number;
+  let attempts = 0;
+
+  do {
+    x = margin + Math.random() * (screenWidth - margin * 2);
+    y = margin + Math.random() * (screenHeight - margin * 2);
+    attempts++;
+
+    const tooCloseToPlayer =
+      Math.hypot(x - playerPosition.x, y - playerPosition.y) < minDistFromPlayer;
+    const tooCloseToBooster = boosterPositions.some(
+      (b) => Math.hypot(x - b.x, y - b.y) < minDistFromBooster,
+    );
+
+    if (!tooCloseToPlayer && !tooCloseToBooster) {
+      return { x, y };
+    }
+  } while (attempts < 20);
+
+  return { x, y };
+}
+
 export function createBooster(position: Position, currentTime: number): Booster {
   return {
     id: generateId(),
     position,
     type: getRandomBoosterType(),
+    spawnTime: currentTime,
+  };
+}
+
+export function createDebuff(position: Position, currentTime: number): Debuff {
+  return {
+    id: generateId(),
+    position,
+    type: 'enlarge',
     spawnTime: currentTime,
   };
 }
@@ -262,6 +304,23 @@ export function shouldSpawnBooster(
   return currentTime - lastBoosterSpawnTime >= GAME.BOOSTER_SPAWN_INTERVAL;
 }
 
+export function shouldSpawnDebuff(
+  playTime: number,
+  lastDebuffSpawnTime: number,
+  currentTime: number,
+  currentDebuffs: number,
+): boolean {
+  // Only spawn after unlock time
+  if (playTime < GAME.DEBUFF_UNLOCK_TIME) return false;
+  // Only one debuff at a time
+  if (currentDebuffs >= 1) return false;
+  return currentTime - lastDebuffSpawnTime >= GAME.DEBUFF_SPAWN_INTERVAL;
+}
+
 export function isBoosterExpired(booster: Booster, currentTime: number): boolean {
   return currentTime - booster.spawnTime > GAME.BOOSTER_LIFETIME;
+}
+
+export function isDebuffExpired(debuff: Debuff, currentTime: number): boolean {
+  return currentTime - debuff.spawnTime > GAME.DEBUFF_LIFETIME;
 }
