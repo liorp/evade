@@ -23,6 +23,7 @@ interface PlayerProps {
   x: SharedValue<number>;
   y: SharedValue<number>;
   hasShield?: boolean;
+  scale?: number;
   // Cosmetic props
   shape?: PlayerShape;
   colorId?: PlayerColorId;
@@ -34,6 +35,7 @@ export const Player: React.FC<PlayerProps> = ({
   x,
   y,
   hasShield = false,
+  scale = 1,
   shape = 'circle',
   colorId = 'green',
   trail = 'none',
@@ -77,11 +79,18 @@ export const Player: React.FC<PlayerProps> = ({
     }
   }, [hasShield, shieldPulse]);
 
+  const isEnlarged = scale > 1;
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: x.value - GAME.PLAYER_RADIUS },
-      { translateY: y.value - GAME.PLAYER_RADIUS },
+      { translateX: x.value - GAME.PLAYER_RADIUS * scale },
+      { translateY: y.value - GAME.PLAYER_RADIUS * scale },
+      { scale: scale },
     ],
+  }));
+
+  const enlargeIndicatorStyle = useAnimatedStyle(() => ({
+    opacity: isEnlarged ? 0.3 : 0,
   }));
 
   const shieldStyle = useAnimatedStyle(() => ({
@@ -140,6 +149,8 @@ export const Player: React.FC<PlayerProps> = ({
     <Animated.View style={[styles.container, animatedStyle]}>
       {/* Shield */}
       {hasShield && <Animated.View style={[styles.shield, shieldStyle]} />}
+      {/* Enlarge indicator */}
+      {isEnlarged && <Animated.View style={[styles.enlargeIndicator, enlargeIndicatorStyle]} />}
       {/* Glow */}
       {(glow !== 'none' || showTrail) && <Animated.View style={[styles.glow, glowStyle]} />}
       {/* Player shape */}
@@ -164,6 +175,15 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: '#44ff44',
     backgroundColor: 'rgba(68, 255, 68, 0.2)',
+  },
+  enlargeIndicator: {
+    position: 'absolute',
+    width: GAME.PLAYER_RADIUS * 2.2,
+    height: GAME.PLAYER_RADIUS * 2.2,
+    borderRadius: GAME.PLAYER_RADIUS * 1.1,
+    borderWidth: 3,
+    borderColor: '#ff4444',
+    backgroundColor: 'rgba(255, 68, 68, 0.15)',
   },
   glow: {
     position: 'absolute',
