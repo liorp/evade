@@ -64,7 +64,7 @@ Native builds use EAS (Expo Application Services) configured in `eas.json`.
 ├── /audio            # Background music & SFX (expo-av)
 ├── /const            # Shared constants (colors)
 ├── /cosmetics        # Cosmetic definitions and constants
-├── /entity           # Game object components (Player, Enemy, Booster, backgrounds)
+├── /entity           # Game object components (Player, Enemy, Booster, Debuff, backgrounds)
 ├── /game             # Game engine core + game modals
 │   ├── GameEngine.ts # Central game loop, state management, event emitter
 │   ├── /systems      # Modular systems: spawn, movement, collision, difficulty
@@ -84,10 +84,10 @@ The game uses a modular systems-based architecture:
 1. **GameEngine.ts** - Central loop using requestAnimationFrame for 60fps gameplay
    - Maintains immutable GameState
    - Orchestrates game systems each frame
-   - Emits events: `gameOver`, `scoreUpdate`, `boosterCollected`, `closeDodge`
+   - Emits events: `gameOver`, `scoreUpdate`, `boosterCollected`, `debuffCollected`, `closeDodge`
 
 2. **Game Systems** (pure functional modules in `/game/systems/`):
-   - `spawn.ts` - Enemy/booster spawning with zone progression
+   - `spawn.ts` - Enemy/booster/debuff spawning with zone progression
    - `movement.ts` - Enemy position updates with jitter
    - `collision.ts` - Collision detection, close dodge tracking
    - `difficulty.ts` - Time-based difficulty scaling
