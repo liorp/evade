@@ -4,14 +4,18 @@ import { getDifficultyParams, getSpawnZone } from './systems/difficulty';
 import { updateEnemies } from './systems/movement';
 import {
   createBooster,
+  createDebuff,
   createEnemy,
   getBoosterSpawnPosition,
+  getDebuffSpawnPosition,
   getSpawnPosition,
   isBoosterExpired,
+  isDebuffExpired,
   shouldSpawn,
   shouldSpawnBooster,
+  shouldSpawnDebuff,
 } from './systems/spawn';
-import type { Booster, Enemy, GameState, Handedness, Position } from './types';
+import type { Booster, Debuff, Enemy, GameState, Handedness, Position } from './types';
 
 export interface GameOverData {
   score: number;
@@ -19,7 +23,12 @@ export interface GameOverData {
   enemySpeedTier?: Enemy['speedTier'];
 }
 
-export type GameEventType = 'gameOver' | 'scoreUpdate' | 'stateChange' | 'boosterCollected';
+export type GameEventType =
+  | 'gameOver'
+  | 'scoreUpdate'
+  | 'stateChange'
+  | 'boosterCollected'
+  | 'debuffCollected';
 export type GameEventCallback = (event: GameEventType, data?: unknown) => void;
 
 export class GameEngine {
@@ -92,6 +101,7 @@ export class GameEngine {
       startTime: now,
       lastSpawnTime: now,
       lastBoosterSpawnTime: now,
+      lastDebuffSpawnTime: now,
     };
     this.lastTimestamp = now;
     this.emit('stateChange');
@@ -178,7 +188,15 @@ export class GameEngine {
     this.updateActiveEffects(timestamp);
 
     // 1. Check collision first (but shield protects)
-    const collidedEnemy = checkCollision(this.state.playerPosition, this.state.enemies);
+    const playerRadius = this.state.activeEffects.enlarge.active
+      ? GAME.PLAYER_RADIUS * this.state.activeEffects.enlarge.scale
+      : GAME.PLAYER_RADIUS;
+
+    const collidedEnemy = checkCollision(
+      this.state.playerPosition,
+      this.state.enemies,
+      playerRadius,
+    );
     if (collidedEnemy) {
       if (this.state.activeEffects.shield.active) {
         // Shield absorbs hit - clear all nearby enemies
@@ -212,6 +230,14 @@ export class GameEngine {
       this.applyBoosterEffect(collectedBooster, timestamp);
       this.state.boosters = this.state.boosters.filter((b) => b.id !== collectedBooster.id);
       this.emit('boosterCollected', collectedBooster.type);
+    }
+
+    // 2b. Check debuff collection
+    const collectedDebuff = this.checkDebuffCollection();
+    if (collectedDebuff) {
+      this.applyDebuffEffect(collectedDebuff, timestamp);
+      this.state.debuffs = this.state.debuffs.filter((d) => d.id !== collectedDebuff.id);
+      this.emit('debuffCollected', collectedDebuff.type);
     }
 
     // 3. Spawn enemies
@@ -250,10 +276,34 @@ export class GameEngine {
       this.state.lastBoosterSpawnTime = timestamp;
     }
 
+    // 4b. Spawn debuffs
+    if (
+      shouldSpawnDebuff(
+        this.state.playTime,
+        this.state.lastDebuffSpawnTime,
+        timestamp,
+        this.state.debuffs.length,
+      )
+    ) {
+      const boosterPositions = this.state.boosters.map((b) => b.position);
+      const position = getDebuffSpawnPosition(
+        this.state.screenWidth,
+        this.state.screenHeight,
+        this.state.playerPosition,
+        boosterPositions,
+      );
+      const debuff = createDebuff(position, timestamp);
+      this.state.debuffs.push(debuff);
+      this.state.lastDebuffSpawnTime = timestamp;
+    }
+
     // 5. Remove expired boosters
     this.state.boosters = this.state.boosters.filter(
       (booster) => !isBoosterExpired(booster, timestamp),
     );
+
+    // 5b. Remove expired debuffs
+    this.state.debuffs = this.state.debuffs.filter((debuff) => !isDebuffExpired(debuff, timestamp));
 
     // 6. Move enemies and track removed (each enemy uses its own speed)
     const result = updateEnemies(
@@ -302,16 +352,46 @@ export class GameEngine {
       this.state.activeEffects.multiplier.active = false;
       this.state.activeEffects.multiplier.value = 1;
     }
+
+    // Check enlarge expiration
+    if (
+      this.state.activeEffects.enlarge.active &&
+      timestamp > this.state.activeEffects.enlarge.endTime
+    ) {
+      this.state.activeEffects.enlarge.active = false;
+      this.state.activeEffects.enlarge.scale = 1;
+    }
   }
 
   private checkBoosterCollection(): Booster | null {
+    const playerRadius = this.state.activeEffects.enlarge.active
+      ? GAME.PLAYER_RADIUS * this.state.activeEffects.enlarge.scale
+      : GAME.PLAYER_RADIUS;
+
     for (const booster of this.state.boosters) {
       const distance = Math.hypot(
         booster.position.x - this.state.playerPosition.x,
         booster.position.y - this.state.playerPosition.y,
       );
-      if (distance < GAME.PLAYER_RADIUS + GAME.BOOSTER_RADIUS) {
+      if (distance < playerRadius + GAME.BOOSTER_RADIUS) {
         return booster;
+      }
+    }
+    return null;
+  }
+
+  private checkDebuffCollection(): Debuff | null {
+    const playerRadius = this.state.activeEffects.enlarge.active
+      ? GAME.PLAYER_RADIUS * this.state.activeEffects.enlarge.scale
+      : GAME.PLAYER_RADIUS;
+
+    for (const debuff of this.state.debuffs) {
+      const distance = Math.hypot(
+        debuff.position.x - this.state.playerPosition.x,
+        debuff.position.y - this.state.playerPosition.y,
+      );
+      if (distance < playerRadius + GAME.DEBUFF_RADIUS) {
+        return debuff;
       }
     }
     return null;
@@ -341,6 +421,16 @@ export class GameEngine {
         this.state.activeEffects.multiplier.active = true;
         this.state.activeEffects.multiplier.endTime = timestamp + GAME.BOOSTER_MULTIPLIER_DURATION;
         this.state.activeEffects.multiplier.value = GAME.BOOSTER_MULTIPLIER_VALUE;
+        break;
+    }
+  }
+
+  private applyDebuffEffect(debuff: Debuff, timestamp: number): void {
+    switch (debuff.type) {
+      case 'enlarge':
+        this.state.activeEffects.enlarge.active = true;
+        this.state.activeEffects.enlarge.endTime = timestamp + GAME.DEBUFF_ENLARGE_DURATION;
+        this.state.activeEffects.enlarge.scale = GAME.DEBUFF_ENLARGE_SCALE;
         break;
     }
   }

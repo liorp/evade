@@ -7,8 +7,12 @@ function distance(a: Position, b: Position): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-export function checkCollision(playerPosition: Position, enemies: Enemy[]): Enemy | null {
-  const collisionDistance = GAME.PLAYER_RADIUS + GAME.ENEMY_RADIUS;
+export function checkCollision(
+  playerPosition: Position,
+  enemies: Enemy[],
+  playerRadius: number = GAME.PLAYER_RADIUS,
+): Enemy | null {
+  const collisionDistance = playerRadius + GAME.ENEMY_RADIUS;
 
   for (const enemy of enemies) {
     if (distance(playerPosition, enemy.position) < collisionDistance) {
